@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const appDir = path.join(root, "08-personal-assistant-anna-app");
 const hostDir = path.join(root, "10-anna-local-host-lab");
+const dashboardReport = path.join(appDir, "DASHBOARD_LIVE_SMOKE_ZH.md");
 const uiReport = path.join(appDir, "UI_SMOKE_ZH.md");
 const doctorReport = path.join(appDir, "HEALTHKIT_DOCTOR_ZH.md");
 const healthReport = path.join(appDir, "HEALTHKIT_BRIDGE_SMOKE_ZH.md");
@@ -15,6 +16,7 @@ const browserReport = path.join(appDir, "BROWSER_HANDOFF_SMOKE_ZH.md");
 const fullReport = path.join(appDir, "FULL_PERSONAL_ASSISTANT_SMOKE_ZH.md");
 const hostReport = path.join(hostDir, "HOST_PERSONAL_ASSISTANT_SMOKE_ZH.md");
 
+await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "dashboard:live:report"]);
 await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "smoke:ui:report"]);
 await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "healthkit:doctor:report"]);
 await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "smoke:healthkit-bridge:report"]);
@@ -22,6 +24,7 @@ await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "smoke:re
 await run("npm", ["--prefix", "08-personal-assistant-anna-app", "run", "smoke:browser-handoff:report"]);
 await run("npm", ["--prefix", "10-anna-local-host-lab", "run", "smoke:personal-assistant-host:report"]);
 
+const dashboard = fs.readFileSync(dashboardReport, "utf8").trim();
 const ui = fs.readFileSync(uiReport, "utf8").trim();
 const doctor = fs.readFileSync(doctorReport, "utf8").trim();
 const health = fs.readFileSync(healthReport, "utf8").trim();
@@ -37,6 +40,7 @@ const rendered = [
   "## 总结",
   "",
   "- 网页端 UI smoke 证明用户可以在 Anna 个人助理模式里实际点击 HealthKit 同意门、生成机票酒店候选、确认候选或否决后换平台。",
+  "- Dashboard live smoke 证明线上 Anna Dashboard 入口可达，并记录未认证请求是否被挡在凭据边界。",
   "- HealthKit doctor 报告证明 iOS Companion 工程、HealthKit entitlement、本地网络权限和本机 iPhone 安装条件已被逐项检查。",
   "- HealthKit bridge smoke 证明 Anna 网页端可读取 companion 推送的 iPhone/Apple Watch 风格快照，而不是只显示默认模拟值。",
   "- 真实外站 smoke 证明 Anna 主体可以生成 Expedia Flights 与 Booking.com 的匿名官方搜索链接，并支持用户选择 Trip.com 官方入口。",
@@ -47,11 +51,16 @@ const rendered = [
   "## 报告文件",
   "",
   "- `UI_SMOKE_ZH.md`：网页端本地 UI 操作、桌面与移动端布局。",
+  "- `DASHBOARD_LIVE_SMOKE_ZH.md`：线上 Dashboard 可达性、认证边界和无凭据探测结果。",
   "- `HEALTHKIT_DOCTOR_ZH.md`：iOS Companion、HealthKit 权限声明、LAN 与本机 Xcode/签名准备度。",
   "- `HEALTHKIT_BRIDGE_SMOKE_ZH.md`：Companion 风格 HealthKit 快照推送、网页端连接与健康边界。",
   "- `REAL_HANDOFF_SMOKE_ZH.md`：真实外站可达性、challenge 分类与人工接管边界。",
   "- `BROWSER_HANDOFF_SMOKE_ZH.md`：从 Anna 网页端打开真实外部网页的浏览器级接管证据。",
   "- `10-anna-local-host-lab/HOST_PERSONAL_ASSISTANT_SMOKE_ZH.md`：Anna Host iframe 内个人助理主体、健康、旅行与审计证据。",
+  "",
+  "## Dashboard Live Smoke 摘要",
+  "",
+  stripTitle(dashboard),
   "",
   "## UI Smoke 摘要",
   "",

@@ -1,7 +1,7 @@
 # Anna 个人助理真实浏览器 Handoff Smoke 报告
 
-生成时间：2026/06/23 03:10:45（Asia/Shanghai）
-UTC：2026-06-22T19:10:45.643Z
+生成时间：2026/06/23 04:29:47（Asia/Shanghai）
+UTC：2026-06-22T20:29:47.135Z
 
 ## 结论
 
@@ -15,7 +15,7 @@ UTC：2026-06-22T19:10:45.643Z
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | flight-expedia-default | Expedia Flights | SHA → NRT · 2026-08-12 · Anna预估 1680 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | NRT | www.expedia.com | www.expedia.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | hotel-booking-default | Booking.com | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 720 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | Tokyo | www.booking.com | www.booking.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
-| hotel-trip-selected | Trip.com Hotels | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 650 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 需要用户手动输入 | Tokyo | www.trip.com | www.trip.com | yes | playwright_new_page_after_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
+| hotel-trip-selected | Trip.com Hotels | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 650 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 需要用户手动输入 | Tokyo | www.trip.com | www.trip.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | natural-language-bundle-flight | Expedia Flights | SHA → NRT · 2026-08-12 · Anna预估 1680 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | NRT | www.expedia.com | www.expedia.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | natural-language-bundle-hotel | Booking.com | Tokyo · 2026-08-12 → 2026-08-14 · 2晚 · Anna预估 1440 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | Tokyo | www.booking.com | www.booking.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 

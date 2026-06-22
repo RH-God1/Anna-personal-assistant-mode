@@ -48,6 +48,7 @@ npm run smoke:browser-handoff
 如需把同一次真实 smoke 写成中文报告：
 
 ```bash
+npm run dashboard:live:report
 npm run smoke:ui:report
 npm run smoke:learning:report
 npm run healthkit:doctor:report
@@ -112,6 +113,7 @@ npm run smoke:anna
   真实 handoff 结果和人工接管边界。
 - `npm run smoke:browser-handoff:report` 会从网页端确认 Anna 候选、授权订购接管后点击真实外站链接，并覆盖自然语言
   机票+酒店组合请求中的机票和酒店两项，验证官方域名、新页打开方式、用户资料门和 `payment_handoff`。
+- `npm run dashboard:live:report` 会无凭据探测 `https://anna.partners/dashboard`，记录线上入口可达性和认证边界；真实 Dashboard 订购测试仍需要用户在浏览器中完成登录、MFA 和最终确认。
 - `npm run smoke:ui:report` 会生成 `UI_SMOKE_ZH.md`，记录网页端 HealthKit 同意门、
   旅行 handoff 控件、自然语言旅行请求到 handoff、桌面端链接和移动端布局检查结果。
 - 根目录 `npm run smoke:personal:host:report` 会在 Anna Local Host iframe 中验证个人助理主体、Host SDK、Executa、Companion 风格健康快照、旅行字段包、自然语言机票+酒店组合接管、用户触发外站新页和 metadata-only 审计。

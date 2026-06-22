@@ -1,7 +1,7 @@
 # Anna HealthKit Doctor 报告
 
-生成时间：2026/06/23 03:10:07（Asia/Shanghai）
-UTC：2026-06-22T19:10:07.601Z
+生成时间：2026/06/23 04:29:20（Asia/Shanghai）
+UTC：2026-06-22T20:29:20.923Z
 
 ## 结论
 

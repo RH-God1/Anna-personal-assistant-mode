@@ -14,6 +14,8 @@
     "verify": "node scripts/verify-all.mjs",
     "smoke:anna": "node scripts/anna-harness-smoke.mjs",
     "smoke:anna:real": "node scripts/anna-runtime-real-smoke.mjs",
+    "smoke:personal:dashboard-live": "npm --prefix 08-personal-assistant-anna-app run dashboard:live",
+    "smoke:personal:dashboard-live:report": "npm --prefix 08-personal-assistant-anna-app run dashboard:live:report",
     "smoke:personal:ui": "npm --prefix 08-personal-assistant-anna-app run smoke:ui",
     "smoke:personal:ui:report": "npm --prefix 08-personal-assistant-anna-app run smoke:ui:report",
     "smoke:personal:real": "npm --prefix 08-personal-assistant-anna-app run smoke:real",

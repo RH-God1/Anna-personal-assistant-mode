@@ -1,11 +1,12 @@
 # Anna 个人助理完整 Smoke 总报告
 
-生成时间：2026/06/23 03:10:57（Asia/Shanghai）
-UTC：2026-06-22T19:10:57.222Z
+生成时间：2026/06/23 04:30:02（Asia/Shanghai）
+UTC：2026-06-22T20:30:02.525Z
 
 ## 总结
 
 - 网页端 UI smoke 证明用户可以在 Anna 个人助理模式里实际点击 HealthKit 同意门、生成机票酒店候选、确认候选或否决后换平台。
+- Dashboard live smoke 证明线上 Anna Dashboard 入口可达，并记录未认证请求是否被挡在凭据边界。
 - HealthKit doctor 报告证明 iOS Companion 工程、HealthKit entitlement、本地网络权限和本机 iPhone 安装条件已被逐项检查。
 - HealthKit bridge smoke 证明 Anna 网页端可读取 companion 推送的 iPhone/Apple Watch 风格快照，而不是只显示默认模拟值。
 - 真实外站 smoke 证明 Anna 主体可以生成 Expedia Flights 与 Booking.com 的匿名官方搜索链接，并支持用户选择 Trip.com 官方入口。
@@ -16,16 +17,43 @@ UTC：2026-06-22T19:10:57.222Z
 ## 报告文件
 
 - `UI_SMOKE_ZH.md`：网页端本地 UI 操作、桌面与移动端布局。
+- `DASHBOARD_LIVE_SMOKE_ZH.md`：线上 Dashboard 可达性、认证边界和无凭据探测结果。
 - `HEALTHKIT_DOCTOR_ZH.md`：iOS Companion、HealthKit 权限声明、LAN 与本机 Xcode/签名准备度。
 - `HEALTHKIT_BRIDGE_SMOKE_ZH.md`：Companion 风格 HealthKit 快照推送、网页端连接与健康边界。
 - `REAL_HANDOFF_SMOKE_ZH.md`：真实外站可达性、challenge 分类与人工接管边界。
 - `BROWSER_HANDOFF_SMOKE_ZH.md`：从 Anna 网页端打开真实外部网页的浏览器级接管证据。
 - `10-anna-local-host-lab/HOST_PERSONAL_ASSISTANT_SMOKE_ZH.md`：Anna Host iframe 内个人助理主体、健康、旅行与审计证据。
 
+## Dashboard Live Smoke 摘要
+
+生成时间：2026/06/23 04:29:12（Asia/Shanghai）
+UTC：2026-06-22T20:29:12.443Z
+
+## 结论
+
+- 线上 Anna Dashboard 可达，但未认证请求被正确挡在登录/凭据边界。
+- 本检查不发送 cookie、token、密码或浏览器会话，不会登录，也不会触发订单、付款或发布。
+
+## 结果
+
+- 目标：https://anna.partners/dashboard
+- 最终 URL：https://anna.partners/login?redirect=/dashboard
+- HTTP：200
+- 分类：auth_required
+- 是否跳转：true
+- 页面/接口信号：login_prompt_or_auth_page
+- secret handling：no_credentials_sent
+- 下一步：Review Dashboard UI state in an authenticated browser session before release.
+
+## 边界
+
+- 该 smoke 只验证线上入口可达性和未认证边界。
+- 真实 Dashboard 订购测试仍需要用户在浏览器中完成登录、MFA 和任何最终确认。
+
 ## UI Smoke 摘要
 
-生成时间：2026/06/23 03:10:07（Asia/Shanghai）
-UTC：2026-06-22T19:10:07.381Z
+生成时间：2026/06/23 04:29:20（Asia/Shanghai）
+UTC：2026-06-22T20:29:20.682Z
 
 ## 结论
 
@@ -68,8 +96,8 @@ UTC：2026-06-22T19:10:07.381Z
 
 ## HealthKit Doctor 摘要
 
-生成时间：2026/06/23 03:10:07（Asia/Shanghai）
-UTC：2026-06-22T19:10:07.601Z
+生成时间：2026/06/23 04:29:20（Asia/Shanghai）
+UTC：2026-06-22T20:29:20.923Z
 
 ## 结论
 
@@ -101,8 +129,8 @@ UTC：2026-06-22T19:10:07.601Z
 
 ## HealthKit Bridge Smoke 摘要
 
-生成时间：2026/06/23 03:10:08（Asia/Shanghai）
-UTC：2026-06-22T19:10:08.454Z
+生成时间：2026/06/23 04:29:21（Asia/Shanghai）
+UTC：2026-06-22T20:29:21.899Z
 
 ## 结论
 
@@ -135,8 +163,8 @@ UTC：2026-06-22T19:10:08.454Z
 
 ## 真实 Handoff Smoke 摘要
 
-生成时间：2026/06/23 03:10:10（Asia/Shanghai）
-UTC：2026-06-22T19:10:10.797Z
+生成时间：2026/06/23 04:29:23（Asia/Shanghai）
+UTC：2026-06-22T20:29:23.894Z
 
 ## 结论
 
@@ -168,8 +196,8 @@ UTC：2026-06-22T19:10:10.797Z
 
 ## 真实浏览器 Handoff Smoke 摘要
 
-生成时间：2026/06/23 03:10:45（Asia/Shanghai）
-UTC：2026-06-22T19:10:45.643Z
+生成时间：2026/06/23 04:29:47（Asia/Shanghai）
+UTC：2026-06-22T20:29:47.135Z
 
 ## 结论
 
@@ -183,7 +211,7 @@ UTC：2026-06-22T19:10:45.643Z
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | flight-expedia-default | Expedia Flights | SHA → NRT · 2026-08-12 · Anna预估 1680 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | NRT | www.expedia.com | www.expedia.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | hotel-booking-default | Booking.com | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 720 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | Tokyo | www.booking.com | www.booking.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
-| hotel-trip-selected | Trip.com Hotels | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 650 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 需要用户手动输入 | Tokyo | www.trip.com | www.trip.com | yes | playwright_new_page_after_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
+| hotel-trip-selected | Trip.com Hotels | Tokyo · 2026-08-12 → 2026-08-13 · 1晚 · Anna预估 650 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 需要用户手动输入 | Tokyo | www.trip.com | www.trip.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | natural-language-bundle-flight | Expedia Flights | SHA → NRT · 2026-08-12 · Anna预估 1680 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | NRT | www.expedia.com | www.expedia.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 | natural-language-bundle-hotel | Booking.com | Tokyo · 2026-08-12 → 2026-08-14 · 2晚 · Anna预估 1440 CNY · 未提供预算，官方最终价待用户接管页面确认 · Anna 预估，官方实时库存与最终价待页面确认 | 已写入官方搜索链接 | Tokyo | www.booking.com | www.booking.com | yes | browser_new_page_from_ui_click | 等待用户填写资料 | payment_handoff | domcontentloaded | browser_reached_external_site | none |
 
@@ -196,8 +224,8 @@ UTC：2026-06-22T19:10:45.643Z
 
 ## Anna Host 个人助理 Smoke 摘要
 
-生成时间：2026/06/23 03:10:57（Asia/Shanghai）
-UTC：2026-06-22T19:10:57.165Z
+生成时间：2026/06/23 04:30:02（Asia/Shanghai）
+UTC：2026-06-22T20:30:02.460Z
 
 ## 结论
 
@@ -213,7 +241,7 @@ UTC：2026-06-22T19:10:57.165Z
 - 健康状态：已连接 · Companion
 - Companion 快照：今日步数 7340，心率 83 bpm，睡眠 6h 38m
 - Companion 来源：Anna iOS HealthKit Companion host smoke
-- 助理回复摘要：ANNA 我已读取这次获授权的健康快照。 记录值为：今日步数 7340 步、最近心率 83 bpm、睡眠 6 小时 38 分钟。这些数值只用于日常提醒，单次读数不能说明健康状态。 已确认 数据时间：2026-06-22T19:10:46.333Z；数据源：Anna iOS HealthKit Companion host smoke 仍未知 真实设备趋势；测量上下文；临床意义 下一步 真实版只展示趋势，不自动诊断；明显不适时联系合格医疗专业人员 强化记忆 无
+- 助理回复摘要：ANNA 我已读取这次获授权的健康快照。 记录值为：今日步数 7340 步、最近心率 83 bpm、睡眠 6 小时 38 分钟。这些数值只用于日常提醒，单次读数不能说明健康状态。 已确认 数据时间：2026-06-22T20:29:47.869Z；数据源：Anna iOS HealthKit Companion host smoke 仍未知 真实设备趋势；测量上下文；临床意义 下一步 真实版只展示趋势，不自动诊断；明显不适时联系合格医疗专业人员 强化记忆 无
 - personal-assistant 工具调用审计数：22
 - 审计是否包含参数值：false
 

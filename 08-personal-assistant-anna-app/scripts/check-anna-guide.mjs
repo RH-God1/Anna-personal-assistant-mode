@@ -32,6 +32,7 @@ await Promise.all([
   assertFile("executas/personal-assistant-node/executa.json"),
   assertFile("executas/personal-assistant-node/personal_assistant_plugin.cjs"),
   assertFile("scripts/amadeus-mcp-smoke.mjs"),
+  assertFile("scripts/dashboard-live-smoke.mjs"),
   assertFile("scripts/ctrip-api-probe.mjs")
 ]);
 
@@ -323,7 +324,7 @@ for (const [name, source] of [
   assert.ok(!source.includes("test_order_"), `${name} provider must not create test orders in this phase`);
 }
 
-for (const scriptName of ["serve", "check", "test", "doctor:anna-guide", "validate:anna", "build:executa-binary", "smoke:anna", "probe:ctrip", "mcp:amadeus", "smoke:amadeus-mcp"]) {
+for (const scriptName of ["serve", "check", "test", "doctor:anna-guide", "validate:anna", "build:executa-binary", "smoke:anna", "dashboard:live", "dashboard:live:report", "probe:ctrip", "mcp:amadeus", "smoke:amadeus-mcp"]) {
   assert.ok(packageJson.scripts?.[scriptName], `package.json scripts must include ${scriptName}`);
 }
 assert.match(packageJson.engines?.node || "", />=\s*22/, "Anna beginner guide requires Node.js 22+");
