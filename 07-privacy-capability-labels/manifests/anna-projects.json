@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "tools": [
+    {
+      "id": "private-travel-agent",
+      "title": "隐私旅行代理",
+      "capabilities": {
+        "reads_pii": false,
+        "writes_external": false,
+        "requires_human_confirmation": true,
+        "human_gates": ["traveler_info", "order_confirmation", "payment"],
+        "data_classes": ["itinerary"],
+        "retention": "memory_only",
+        "external_domains": []
+      }
+    },
+    {
+      "id": "bilingual-focus-flow",
+      "title": "双语 Focus Flow",
+      "capabilities": {
+        "reads_pii": false,
+        "writes_external": false,
+        "requires_human_confirmation": false,
+        "human_gates": [],
+        "data_classes": ["focus_topic", "focus_history"],
+        "retention": "local_until_deleted",
+        "external_domains": []
+      }
+    },
+    {
+      "id": "executa-mcp-bridge",
+      "title": "Executa-to-MCP Bridge",
+      "capabilities": {
+        "reads_pii": false,
+        "writes_external": false,
+        "requires_human_confirmation": true,
+        "human_gates": ["host_tool_confirmation"],
+        "data_classes": ["tool_metadata", "audit_metadata"],
+        "retention": "local_until_deleted",
+        "external_domains": []
+      }
+    },
+    {
+      "id": "personal-assistant-mode",
+      "title": "Anna 个人助理模式",
+      "capabilities": {
+        "reads_pii": true,
+        "writes_external": true,
+        "requires_human_confirmation": true,
+        "human_gates": [
+          "location_share",
+          "health_data_connection",
+          "anna_chat_sync"
+        ],
+        "data_classes": [
+          "approximate_location",
+          "health_metrics",
+          "conversation_context",
+          "attachment_metadata"
+        ],
+        "retention": "session",
+        "external_domains": [
+          "api.open-meteo.com",
+          "air-quality-api.open-meteo.com"
+        ]
+      }
+    },
+    {
+      "id": "multi-model-project-workspace",
+      "title": "Anna 多模型项目工作区",
+      "capabilities": {
+        "reads_pii": false,
+        "writes_external": false,
+        "requires_human_confirmation": true,
+        "human_gates": [
+          "promote_shared_memory",
+          "share_dependency_artifact"
+        ],
+        "data_classes": [
+          "project_metadata",
+          "conversation_context",
+          "artifact_metadata",
+          "model_provenance"
+        ],
+        "retention": "local_until_deleted",
+        "external_domains": []
+      }
+    }
+  ]
+}

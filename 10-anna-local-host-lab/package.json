@@ -1,0 +1,26 @@
+{
+  "name": "anna-local-host-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "desktop/main.mjs",
+  "description": "Local Anna-like host for App, Executa, ACL and privacy testing.",
+  "scripts": {
+    "start": "node src/server.js",
+    "desktop": "electron .",
+    "desktop:dev": "electron . --devtools",
+    "desktop:smoke": "electron . --smoke-test",
+    "check": "node --check src/app-registry.js && node --check src/executa-pool.js && node --check src/privacy.js && node --check src/host.js && node --check src/server.js && node --check desktop/main.mjs && node --check public/app.js && node --check public/anna-sdk.js && node --check playwright.config.js && node --check playwright.desktop.config.js && node --check tests/browser/host.spec.js && node --check tests/desktop/desktop.spec.js && node --check scripts/personal-assistant-host-smoke.mjs",
+    "test": "node --test tests/*.test.js",
+    "test:desktop": "node ../01-private-travel-booking-agent/node_modules/@playwright/test/cli.js test --config=playwright.desktop.config.js",
+    "test:browser": "node ../01-private-travel-booking-agent/node_modules/@playwright/test/cli.js test --config=playwright.config.js",
+    "smoke:personal-assistant-host": "node scripts/personal-assistant-host-smoke.mjs",
+    "smoke:personal-assistant-host:report": "node scripts/personal-assistant-host-smoke.mjs --format markdown --out HOST_PERSONAL_ASSISTANT_SMOKE_ZH.md"
+  },
+  "devDependencies": {
+    "electron": "^42.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

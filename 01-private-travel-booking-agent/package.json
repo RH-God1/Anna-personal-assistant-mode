@@ -1,0 +1,21 @@
+{
+  "name": "private-travel-booking-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first browser extension prototype for privacy-preserving travel booking automation.",
+  "scripts": {
+    "check": "node scripts/check-code.js && node scripts/check-manifest.js",
+    "serve:api": "node server/index.js",
+    "test:api": "node tests/api-flow.js && node --test tests/discord-form.test.js",
+    "browser:install": "playwright install chromium webkit",
+    "test:browser": "playwright test",
+    "test:browser:headed": "playwright test --headed",
+    "dc:credentials": "node scripts/discord-login-form.js",
+    "test:dc-login": "playwright test --config=playwright.manual.config.js --headed",
+    "test:dc-login:check": "DC_SKIP_GOOGLE=true DC_VERIFY_ONLY=true playwright test --config=playwright.manual.config.js",
+    "test:dc-login:ui": "playwright test --config=playwright.manual.config.js --ui --ui-host 127.0.0.1 --ui-port 9323"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "anna-projects",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev:api": "tsx watch src/server.ts",
+    "dev:controlled-api": "corepack pnpm --filter @anna/api-server dev",
+    "build:api": "tsc -p tsconfig.json",
+    "build:controlled-assistant": "corepack pnpm -r --filter @anna/shared --filter @anna/audit-logger --filter @anna/policy-engine --filter @anna/approval-engine --filter @anna/tool-registry --filter @anna/browser-tools --filter @anna/mac-tools --filter @anna/booking-tools --filter @anna/payment-tools --filter @anna/agent-core --filter @anna/api-server build",
+    "start:api": "node dist/server.js",
+    "start:controlled-api": "corepack pnpm --filter @anna/api-server start",
+    "verify": "node scripts/verify-all.mjs",
+    "smoke:anna": "node scripts/anna-harness-smoke.mjs",
+    "smoke:anna:real": "node scripts/anna-runtime-real-smoke.mjs",
+    "smoke:personal:ui": "npm --prefix 08-personal-assistant-anna-app run smoke:ui",
+    "smoke:personal:ui:report": "npm --prefix 08-personal-assistant-anna-app run smoke:ui:report",
+    "smoke:personal:real": "npm --prefix 08-personal-assistant-anna-app run smoke:real",
+    "smoke:personal:real:report": "npm --prefix 08-personal-assistant-anna-app run smoke:real:report",
+    "smoke:personal:healthkit-doctor:report": "npm --prefix 08-personal-assistant-anna-app run healthkit:doctor:report",
+    "smoke:personal:healthkit": "npm --prefix 08-personal-assistant-anna-app run smoke:healthkit-bridge",
+    "smoke:personal:healthkit:report": "npm --prefix 08-personal-assistant-anna-app run smoke:healthkit-bridge:report",
+    "smoke:personal:browser-handoff": "npm --prefix 08-personal-assistant-anna-app run smoke:browser-handoff",
+    "smoke:personal:browser-handoff:report": "npm --prefix 08-personal-assistant-anna-app run smoke:browser-handoff:report",
+    "smoke:personal:host": "npm --prefix 10-anna-local-host-lab run smoke:personal-assistant-host",
+    "smoke:personal:host:report": "npm --prefix 10-anna-local-host-lab run smoke:personal-assistant-host:report",
+    "smoke:personal:full:report": "node scripts/personal-assistant-full-smoke.mjs",
+    "smoke:duffel-travel-api": "npm run build:api && node scripts/duffel-travel-api-smoke.mjs",
+    "mcp:smoke": "node 05-executa-to-mcp-bridge/scripts/smoke-mcp.mjs",
+    "mcp:amadeus": "node 08-personal-assistant-anna-app/mcp/amadeus-travel-server.js",
+    "mcp:amadeus:smoke": "node 08-personal-assistant-anna-app/scripts/amadeus-mcp-smoke.mjs",
+    "test": "node scripts/verify-all.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

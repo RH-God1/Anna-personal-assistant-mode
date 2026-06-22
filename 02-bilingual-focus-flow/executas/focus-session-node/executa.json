@@ -1,0 +1,19 @@
+{
+  "slug": "focus-session",
+  "name": "Focus Session",
+  "version": "1.0.0",
+  "executa_type": "tool",
+  "description": "Persists bilingual Focus Flow timer state.",
+  "tool_id": "tool-test-focus-session-12345678",
+  "type": "node",
+  "enabled": true,
+  "distribution": {
+    "active": "local",
+    "profiles": {
+      "local": {
+        "type": "local",
+        "supports_protocol": true
+      }
+    }
+  }
+}

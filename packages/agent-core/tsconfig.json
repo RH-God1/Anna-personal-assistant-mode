@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true
+  },
+  "references": [
+    { "path": "../shared" },
+    { "path": "../audit-logger" },
+    { "path": "../approval-engine" },
+    { "path": "../policy-engine" },
+    { "path": "../tool-registry" }
+  ],
+  "include": ["src/**/*.ts"]
+}
+

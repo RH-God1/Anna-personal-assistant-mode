@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/audit-logger" },
+    { "path": "../../packages/approval-engine" },
+    { "path": "../../packages/policy-engine" },
+    { "path": "../../packages/tool-registry" },
+    { "path": "../../packages/browser-tools" },
+    { "path": "../../packages/mac-tools" },
+    { "path": "../../packages/booking-tools" },
+    { "path": "../../packages/payment-tools" },
+    { "path": "../../packages/agent-core" }
+  ],
+  "include": ["src/**/*.ts"]
+}
+

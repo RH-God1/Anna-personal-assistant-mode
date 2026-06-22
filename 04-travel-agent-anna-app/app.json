@@ -1,0 +1,14 @@
+{
+  "slug": "private-travel-agent",
+  "name": "隐私旅行代理",
+  "version": "1.0.0",
+  "tagline": "Plan travel while keeping identity and payment under human control.",
+  "description": "Anna App 版本的隐私优先旅行代理。只处理非个人行程查询，在旅客信息、订单确认和付款前强制人工接管。",
+  "category": "lifestyle",
+  "pricing_model": "free",
+  "bundled_executas": {
+    "travel-agent": {
+      "path": "./executas/travel-agent-node"
+    }
+  }
+}

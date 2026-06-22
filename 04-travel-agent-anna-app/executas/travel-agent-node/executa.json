@@ -1,0 +1,24 @@
+{
+  "slug": "private-travel-agent",
+  "name": "Private Travel Agent",
+  "version": "1.0.0",
+  "executa_type": "tool",
+  "description": "Anonymous itinerary sandbox with mandatory traveler and payment gates.",
+  "tool_id": "tool-test-private-travel-agent-12345678",
+  "type": "node",
+  "enabled": true,
+  "distribution": {
+    "active": "local",
+    "profiles": {
+      "local": {
+        "type": "local",
+        "supports_protocol": true
+      }
+    }
+  },
+  "privacy_capabilities": {
+    "reads_pii": false,
+    "writes_external": false,
+    "requires_human_confirmation": true
+  }
+}

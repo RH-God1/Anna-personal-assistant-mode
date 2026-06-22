@@ -1,0 +1,9 @@
+{
+  "$schema": "anna-executa-identity/v1",
+  "host": "https://anna.partners",
+  "executa_id": 995,
+  "tool_id": "tool-duasgfuygq36136-private-travel-agent-m3sja5qv",
+  "slug": "private-travel-agent",
+  "executa_type": "tool",
+  "first_published_at": "2026-06-16T21:22:13.843Z"
+}

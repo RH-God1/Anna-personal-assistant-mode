@@ -1,0 +1,122 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c1020;
+  --surface: rgba(25, 31, 54, 0.82);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #f3f5ff;
+  --muted: #aab2cc;
+  --accent: #8b7cff;
+  --accent2: #39d4d0;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eff1fb;
+  --surface: rgba(255, 255, 255, 0.9);
+  --line: rgba(28, 35, 62, 0.12);
+  --text: #171c32;
+  --muted: #66708b;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(139, 124, 255, 0.3), transparent 38%),
+    radial-gradient(circle at 95% 75%, rgba(57, 212, 208, 0.22), transparent 36%),
+    var(--bg);
+  font-family: Inter, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
+}
+button, input, select { font: inherit; }
+button, select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+button { min-height: 40px; padding: 8px 16px; cursor: pointer; }
+.shell {
+  width: min(720px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.topbar, .brand, .top-actions, footer, .stats-card header {
+  display: flex;
+  align-items: center;
+}
+.topbar, .stats-card header { justify-content: space-between; gap: 12px; }
+.brand, .top-actions, footer { gap: 9px; }
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+#locale { min-height: 36px; padding: 4px 9px; }
+.icon-button { width: 36px; min-height: 36px; padding: 0; }
+.card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+}
+.timer-card { padding: 22px; text-align: center; }
+#topic {
+  width: 100%;
+  padding: 9px 4px;
+  border: 0;
+  border-bottom: 1px dashed var(--line);
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  text-align: center;
+}
+.ring { position: relative; width: min(220px, 58vw); margin: 14px auto; aspect-ratio: 1; }
+.ring svg { width: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 10; }
+.track { stroke: var(--line); }
+.progress {
+  stroke: url(#unused);
+  stroke: var(--accent2);
+  stroke-linecap: round;
+  stroke-dasharray: 603.19;
+  stroke-dashoffset: 603.19;
+  transition: stroke-dashoffset 0.4s;
+}
+.clock { position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; }
+.clock strong { font: 500 clamp(34px, 9vw, 44px) ui-monospace, monospace; }
+.clock span { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+.presets, .controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.presets button.active { border-color: transparent; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0b1020; }
+.controls { margin-top: 14px; }
+.controls .primary { border: 0; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0b1020; font-weight: 800; }
+.stats-card { flex: 1; min-height: 120px; padding: 16px 18px; }
+.stats-card h2 { margin: 0; font-size: 14px; }
+.stats-card header span, footer { color: var(--muted); font-size: 12px; }
+#history { margin: 12px 0 0; padding: 0; list-style: none; max-height: 220px; overflow: auto; }
+#history li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 4px; border-top: 1px solid var(--line); }
+#history .empty { justify-content: center; color: var(--muted); border: 0; text-align: center; }
+footer { margin-top: auto; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #788099; }
+.dot.connected { background: #42d38a; box-shadow: 0 0 8px #42d38a; }
+footer span:last-child { margin-left: auto; }
+
+@media (max-height: 560px), (max-width: 380px) {
+  .shell { min-height: auto; padding: 10px; gap: 9px; overflow-y: auto; }
+  .timer-card { padding: 13px; }
+  .ring { width: 142px; margin: 8px auto; }
+  .presets { display: grid; grid-template-columns: 1fr 1fr; }
+  .presets button { min-height: 34px; padding: 5px 12px; }
+  .controls { margin-top: 9px; }
+  .stats-card { min-height: 100px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress { transition: none; }
+}

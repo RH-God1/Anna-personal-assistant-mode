@@ -1,0 +1,16 @@
+{
+  "name": "anna-i18n-qa-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "anna-i18n-qa": "src/cli.js"
+  },
+  "scripts": {
+    "check": "node --check src/cli.js && node --check src/core.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

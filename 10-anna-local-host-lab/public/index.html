@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anna Local Host Lab</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="grid-noise" aria-hidden="true"></div>
+    <header class="masthead">
+      <div>
+        <p class="kicker">LOCAL RUNTIME / STRICT PRIVACY</p>
+        <h1>Anna Host<br><i>Verification Lab</i></h1>
+      </div>
+      <div class="host-state">
+        <span class="pulse"></span>
+        <div><b>LOCAL HOST ONLINE</b><small>credentials isolated · audit redacted</small></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="catalog">
+        <header class="section-head">
+          <span>01</span>
+          <div><h2>应用舱</h2><p>选择一个真实 Anna App，在隔离 Host 中启动。</p></div>
+        </header>
+        <div id="appGrid" class="app-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="runtime">
+        <header class="runtime-bar">
+          <div>
+            <span class="eyebrow">ACTIVE WINDOW</span>
+            <strong id="windowTitle">尚未启动应用</strong>
+          </div>
+          <label class="network-switch">
+            <input id="networkGrant" type="checkbox" disabled>
+            <span>允许当前窗口访问外部网络</span>
+          </label>
+        </header>
+        <div class="viewport-shell">
+          <div id="emptyState" class="empty-state">
+            <b>NO ACTIVE APP</b>
+            <p>Host 会在应用调用工具前执行 ACL、隐私策略与结果泄露扫描。</p>
+          </div>
+          <iframe
+            id="appFrame"
+            title="Anna App window"
+            sandbox="allow-scripts allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"
+            referrerpolicy="no-referrer"
+            hidden
+          ></iframe>
+        </div>
+      </section>
+
+      <aside class="audit-panel">
+        <header class="section-head compact">
+          <span>02</span>
+          <div><h2>元数据审计</h2><p>不记录参数值与工具结果。</p></div>
+        </header>
+        <ol id="auditList" class="audit-list"></ol>
+      </aside>
+    </main>
+
+    <footer>
+      <span>Anna protocol laboratory</span>
+      <span>localhost only · CSP locked · ephemeral chat</span>
+    </footer>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

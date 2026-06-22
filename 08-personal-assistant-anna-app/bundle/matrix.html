@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anna Matrix Command Panel</title>
+    <link rel="stylesheet" href="/matrix.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">Anna Personal Assistant Mode</p>
+        <h1>Matrix 命令面板</h1>
+        <p class="summary">只允许运行本项目登记过的安全命令。这里不会接受任意 shell 输入，也不会绕过受控后端的 policy、approval 和 audit 设计。</p>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>可用命令</h2>
+          <button id="refreshButton" type="button">刷新</button>
+        </div>
+        <div id="commandList" class="command-list" aria-live="polite"></div>
+      </section>
+
+      <section class="panel">
+        <h2>输出</h2>
+        <pre id="output" class="output">等待命令...</pre>
+      </section>
+    </main>
+    <script type="module" src="/matrix.js"></script>
+  </body>
+</html>
+

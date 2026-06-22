@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anna.local/schemas/project-workspace.schema.json",
+  "title": "Anna Multi-model Project Workspace",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "type",
+    "id",
+    "name",
+    "sharing_policy",
+    "subprojects",
+    "memories",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "type": {
+      "const": "anna.project"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": ["string", "null"]
+    },
+    "instructions": {
+      "type": ["string", "null"]
+    },
+    "sharing_policy": {
+      "const": "explicit_publish"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "subprojects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/subproject"
+      }
+    },
+    "memories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/memory"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "events": {
+      "type": "array"
+    }
+  },
+  "$defs": {
+    "modelBinding": {
+      "type": "object",
+      "required": [
+        "requested_model_id",
+        "selected_model_id",
+        "required_capabilities",
+        "fallback_used"
+      ],
+      "properties": {
+        "requested_model_id": {
+          "type": "string"
+        },
+        "selected_model_id": {
+          "type": "string"
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallback_used": {
+          "type": "boolean"
+        }
+      }
+    },
+    "subproject": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "status",
+        "depends_on",
+        "model_binding",
+        "turns"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objective": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "enum": ["active", "paused", "completed", "archived"]
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "model_binding": {
+          "$ref": "#/$defs/modelBinding"
+        },
+        "turns": {
+          "type": "array"
+        },
+        "updated_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "content",
+        "scope",
+        "state",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "subproject_id": {
+          "type": ["string", "null"]
+        },
+        "kind": {
+          "enum": ["fact", "decision", "constraint", "summary", "note"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "scope": {
+          "enum": ["subproject", "project"]
+        },
+        "state": {
+          "enum": ["proposed", "confirmed"]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "approved_by": {
+          "type": ["string", "null"]
+        },
+        "updated_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "required": [
+        "id",
+        "subproject_id",
+        "name",
+        "summary",
+        "media_type",
+        "visibility",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "subproject_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "uri": {
+          "type": ["string", "null"]
+        },
+        "content_hash": {
+          "type": ["string", "null"]
+        },
+        "visibility": {
+          "enum": ["private", "dependencies", "project"]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "approved_by": {
+          "type": ["string", "null"]
+        },
+        "updated_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["user", "model", "tool", "system"]
+        },
+        "model_id": {
+          "type": ["string", "null"]
+        },
+        "tool_id": {
+          "type": ["string", "null"]
+        },
+        "subproject_id": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

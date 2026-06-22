@@ -1,0 +1,110 @@
+{
+  "private-travel-agent": {
+    "title": "隐私旅行代理",
+    "risk": "guarded",
+    "badges": [
+      "no-pii",
+      "local-only",
+      "human-gated"
+    ],
+    "mcp_annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "consent": {
+      "required": true,
+      "gates": [
+        "traveler_info",
+        "order_confirmation",
+        "payment"
+      ]
+    }
+  },
+  "bilingual-focus-flow": {
+    "title": "双语 Focus Flow",
+    "risk": "low",
+    "badges": [
+      "no-pii",
+      "local-only",
+      "automatic-safe-scope"
+    ],
+    "mcp_annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "consent": {
+      "required": false,
+      "gates": []
+    }
+  },
+  "executa-mcp-bridge": {
+    "title": "Executa-to-MCP Bridge",
+    "risk": "guarded",
+    "badges": [
+      "no-pii",
+      "local-only",
+      "human-gated"
+    ],
+    "mcp_annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "consent": {
+      "required": true,
+      "gates": [
+        "host_tool_confirmation"
+      ]
+    }
+  },
+  "personal-assistant-mode": {
+    "title": "Anna 个人助理模式",
+    "risk": "high",
+    "badges": [
+      "reads-pii",
+      "external-write",
+      "human-gated"
+    ],
+    "mcp_annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    },
+    "consent": {
+      "required": true,
+      "gates": [
+        "location_share",
+        "health_data_connection",
+        "anna_chat_sync"
+      ]
+    }
+  },
+  "multi-model-project-workspace": {
+    "title": "Anna 多模型项目工作区",
+    "risk": "guarded",
+    "badges": [
+      "no-pii",
+      "local-only",
+      "human-gated"
+    ],
+    "mcp_annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "consent": {
+      "required": true,
+      "gates": [
+        "promote_shared_memory",
+        "share_dependency_artifact"
+      ]
+    }
+  }
+}

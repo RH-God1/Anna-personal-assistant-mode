@@ -1,0 +1,30 @@
+allowed:
+  - browser.open
+  - browser.screenshot
+  - browser.extract_text
+  - file.read
+  - file.write
+  - file.move
+  - mac.shortcut.run
+  - booking.prepare
+  - payment.create_intent
+  - email.draft
+
+requires_approval:
+  - file.write
+  - file.move
+  - mac.shortcut.run
+  - booking.prepare
+  - payment.create_intent
+  - email.draft
+
+denied:
+  - shell.sudo
+  - shell.run
+  - file.delete
+  - payment.confirm
+  - booking.confirm
+  - email.send
+  - personal_data.submit
+  - keychain.read
+  - browser.password.read

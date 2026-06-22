@@ -1,0 +1,17 @@
+{
+  "name": "anna-bilingual-focus-flow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bilingual Anna Focus Flow app with a standalone preview and Node Executa.",
+  "scripts": {
+    "serve": "node server.js",
+    "check": "node --check bundle/app.js && node --check bundle/i18n.js && node --check server.js && node --check executas/focus-session-node/focus_session_plugin.js",
+    "test": "node --test tests/*.test.js",
+    "validate:anna": "npx --yes @anna-ai/cli@0.1.30 validate --strict",
+    "smoke:anna": "node ../scripts/anna-harness-smoke.mjs 02-bilingual-focus-flow"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

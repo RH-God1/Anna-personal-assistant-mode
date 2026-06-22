@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anna 个人助理模式</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <main class="app-shell">
+      <aside class="rail" aria-label="助理模式导航">
+        <div class="mini-orb" aria-hidden="true"><i></i><b></b></div>
+        <nav>
+          <button class="rail-button active" data-target="assistantPanel" aria-label="助理">✦</button>
+          <button class="rail-button" data-target="weatherPanel" aria-label="天气">⌁</button>
+          <button class="rail-button" data-target="healthPanel" aria-label="健康">♡</button>
+          <button class="rail-button" data-target="travelPanel" aria-label="旅行">↗</button>
+          <button class="rail-button" data-target="bookingPanel" aria-label="预订">□</button>
+          <button class="rail-button" data-target="modelsPanel" aria-label="模型">◇</button>
+          <button class="rail-button" data-target="learningPanel" aria-label="学习">◎</button>
+        </nav>
+        <span class="privacy-dot" title="隐私优先"></span>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="overline">PERSONAL MODE · EXPERIMENT 08</p>
+            <h1>个人助理模式</h1>
+          </div>
+          <div class="status-cluster">
+            <span id="connectionStatus" class="status-pill">正在连接</span>
+            <span class="status-pill quiet">本地优先</span>
+          </div>
+        </header>
+
+        <section id="assistantPanel" class="hero panel-anchor">
+          <div class="hero-copy">
+            <span class="section-mark">Anna context layer</span>
+            <h2>先理解你，再选择能力。</h2>
+            <p>文本、图像、音频与工具并不交给同一个固定模型。助理先判断任务需要什么，再让 Anna 主机确认合适的模型。</p>
+            <div class="quick-actions">
+              <button data-prompt="帮我看看当地天气和空气质量">查看当地环境</button>
+              <button data-prompt="请基于我授权的健康快照做非医疗性的整理">整理健康快照</button>
+              <button data-prompt="帮我规划一次机票和酒店行程，先不要下单或付款">规划机票酒店</button>
+              <button data-prompt="我在两个选择之间纠结，请帮我区分事实、预测和代价">梳理一个决定</button>
+            </div>
+          </div>
+          <div class="persona-stage" aria-label="Anna 助理状态">
+            <div class="orbit orbit-a"></div>
+            <div class="orbit orbit-b"></div>
+            <div class="pulse-ring"></div>
+            <div class="persona">
+              <span class="eye left"></span>
+              <span class="eye right"></span>
+            </div>
+            <div class="persona-caption">
+              <strong id="personaState">待命</strong>
+              <span id="personaDetail">能力路由尚未启动</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard-grid">
+          <article id="weatherPanel" class="module weather-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">01 / ENVIRONMENT</span>
+                <h3>天气与空气</h3>
+              </div>
+              <span id="weatherBadge" class="module-badge">未读取位置</span>
+            </header>
+            <div class="weather-now">
+              <strong id="temperature">--°</strong>
+              <div>
+                <span id="weatherLabel">等待更新</span>
+                <small id="weatherDetails">位置由你主动授权</small>
+              </div>
+            </div>
+            <div class="metrics">
+              <div><span>AQI</span><strong id="aqi">--</strong></div>
+              <div><span>PM2.5</span><strong id="pm25">--</strong></div>
+              <div><span>湿度</span><strong id="humidity">--</strong></div>
+            </div>
+            <div class="location-fields">
+              <input id="locationLabel" aria-label="位置名称" placeholder="我的位置" maxlength="100">
+              <input id="latitude" aria-label="纬度" type="number" step="0.0001" placeholder="31.2304">
+              <input id="longitude" aria-label="经度" type="number" step="0.0001" placeholder="121.4737">
+            </div>
+            <div class="module-actions">
+              <button id="locateButton" class="ghost-button">使用我的位置</button>
+              <button id="weatherButton" class="solid-button">更新天气</button>
+              <button id="preflightButton" class="ghost-button">重新前置问候</button>
+            </div>
+            <p class="microcopy">调用时仅向 Open-Meteo 发送近似坐标，本应用不保存位置。</p>
+          </article>
+
+          <article id="healthPanel" class="module health-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">02 / WELLBEING</span>
+                <h3>健康桥接</h3>
+              </div>
+              <span id="healthBadge" class="module-badge">模拟数据</span>
+            </header>
+            <div class="health-values">
+              <div><span>今日步数</span><strong id="stepCount">--</strong><small>steps</small></div>
+              <div><span>最近心率</span><strong id="heartRate">--</strong><small>bpm</small></div>
+              <div><span>睡眠</span><strong id="sleepValue">--</strong><small>最近记录</small></div>
+            </div>
+            <label class="consent-row">
+              <input id="healthConsent" type="checkbox">
+              <span>我同意在本次会话中连接 iPhone / Apple Watch 的 Apple HealthKit；第一阶段只读取今日步数、最近心率和睡眠记录，不写入健康数据。</span>
+            </label>
+            <div class="module-actions">
+              <button id="healthConnectButton" class="solid-button">连接 HealthKit 桥接</button>
+              <button id="healthDisconnectButton" class="ghost-button" disabled>断开</button>
+            </div>
+            <p class="microcopy">真实版本需要 iOS Companion App 经 HealthKit 授权提供数据；网页不能直接读取 Apple Health，也不会上传健康数据到服务器。</p>
+          </article>
+
+          <article id="travelPanel" class="module travel-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">03 / TRAVEL HANDOFF</span>
+                <h3>机票酒店接管</h3>
+              </div>
+              <span id="travelStatus" class="module-badge">未开始</span>
+            </header>
+            <div class="travel-fields">
+              <label>类型
+                <select id="travelProduct">
+                  <option value="flight">机票</option>
+                  <option value="hotel">酒店</option>
+                </select>
+              </label>
+              <label>官方平台
+                <select id="travelOfficialSite">
+                  <option value="expedia">Expedia Flights</option>
+                </select>
+              </label>
+              <label>出发地
+                <input id="travelOrigin" value="SHA" maxlength="80" autocomplete="off">
+              </label>
+              <label>目的地 / 城市
+                <input id="travelDestination" value="NRT" maxlength="80" autocomplete="off">
+              </label>
+              <label>日期
+                <input id="travelDate" type="date" value="2026-08-12">
+              </label>
+              <label>航程
+                <select id="travelTripType">
+                  <option value="oneway">单程</option>
+                  <option value="roundtrip">往返</option>
+                </select>
+              </label>
+              <label>返程
+                <input id="travelReturnDate" type="date" value="2026-08-18">
+              </label>
+              <label>晚数
+                <input id="travelNights" type="number" min="1" max="30" value="1">
+              </label>
+              <label>预算 CNY
+                <input id="travelBudget" type="number" min="1" max="1000000" placeholder="例如 3000">
+              </label>
+              <label>成人
+                <input id="travelAdults" type="number" min="1" max="9" value="1">
+              </label>
+              <label>平台
+                <select id="travelProvider">
+                  <option value="official-handoff">官方网页人工接管</option>
+                  <option value="sandbox">Sandbox 预览</option>
+                </select>
+              </label>
+            </div>
+            <div class="travel-result" id="travelResult" hidden>
+              <div><b id="travelSite">等待 Anna 选择平台</b><span id="travelRoute">--</span></div>
+              <a id="travelLink" href="#" target="_blank" rel="noopener noreferrer">打开官方搜索页</a>
+            </div>
+            <div class="travel-handoff-packet" id="travelHandoffPacket" hidden>
+              <div class="packet-heading">
+                <span>匿名字段包</span>
+                <b id="travelFieldMode">等待生成</b>
+              </div>
+              <dl id="travelFieldList"></dl>
+            </div>
+            <div class="travel-bundle-summary" id="travelBundleSummary" hidden></div>
+            <div class="module-actions">
+              <button id="travelPlanButton" class="solid-button" type="button">生成接管链接</button>
+              <button id="travelConfirmButton" class="ghost-button" type="button" disabled>确认此方案</button>
+              <button id="travelRejectButton" class="ghost-button" type="button" disabled>换平台再搜</button>
+              <button id="travelOpenButton" class="ghost-button" type="button" disabled>打开外站</button>
+            </div>
+            <p id="travelBoundary" class="microcopy">只发送匿名行程字段。验证码、登录、旅客身份、订单确认与付款由用户本人完成。</p>
+          </article>
+
+          <article id="bookingPanel" class="module booking-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">04 / BOOKING SANDBOX</span>
+                <h3>机票酒店预确认</h3>
+              </div>
+              <span id="bookingStatus" class="module-badge">Sandbox/test mode</span>
+            </header>
+            <div class="booking-fields">
+              <label>预订类型
+                <select id="bookingType">
+                  <option value="flight_hotel">机票 + 酒店</option>
+                  <option value="flight">只订机票</option>
+                  <option value="hotel">只订酒店</option>
+                </select>
+              </label>
+              <label>机票 provider
+                <select id="bookingFlightProvider">
+                  <option value="duffel">Duffel Flights</option>
+                  <option value="amadeus">Amadeus Sandbox Flights</option>
+                </select>
+              </label>
+              <label>酒店 provider
+                <select id="bookingHotelProvider">
+                  <option value="duffel">Duffel Stays</option>
+                  <option value="amadeus">Amadeus Sandbox Hotels</option>
+                </select>
+              </label>
+              <label>出发地
+                <input id="bookingOrigin" value="SHA" maxlength="80" autocomplete="off">
+              </label>
+              <label>目的地 / 城市
+                <input id="bookingDestination" value="NRT" maxlength="100" autocomplete="off">
+              </label>
+              <label>出发 / 入住
+                <input id="bookingDepartureDate" type="date" value="2026-08-12">
+              </label>
+              <label>返程
+                <input id="bookingReturnDate" type="date" value="2026-08-18">
+              </label>
+              <label>人数
+                <input id="bookingAdults" type="number" min="1" max="9" value="1">
+              </label>
+              <label>舱位
+                <select id="bookingCabinClass">
+                  <option value="economy">经济舱</option>
+                  <option value="premium_economy">超级经济舱</option>
+                  <option value="business">商务舱</option>
+                  <option value="first">头等舱</option>
+                </select>
+              </label>
+              <label>机票预算 CNY
+                <input id="bookingFlightBudget" type="number" min="1" max="1000000" placeholder="例如 3500">
+              </label>
+              <label>酒店位置
+                <input id="bookingHotelLocation" placeholder="例如 新宿 / Central" maxlength="100">
+              </label>
+              <label>酒店预算 CNY
+                <input id="bookingHotelBudget" type="number" min="1" max="1000000" placeholder="例如 2000">
+              </label>
+              <label>酒店晚数
+                <input id="bookingHotelNights" type="number" min="1" max="30" value="2">
+              </label>
+            </div>
+            <label class="booking-travelers-label">乘客/住客展示名（每行一位，可留空；不要输入证件号、护照号或银行卡）
+              <textarea id="bookingTravelers" rows="2" placeholder="王小明&#10;Li"></textarea>
+            </label>
+            <div id="bookingCompareResult" class="booking-compare-result" hidden></div>
+            <div class="module-actions">
+              <button id="bookingSearchButton" class="solid-button" type="button">搜索并比较</button>
+              <button id="bookingPrepareButton" class="ghost-button" type="button" disabled>生成确认页</button>
+            </div>
+            <p id="bookingBoundary" class="microcopy">前端只调用 Anna 统一预确认接口；创建订单前必须进入完整确认页并人工勾选确认。第一阶段不自动付款。</p>
+          </article>
+
+          <article id="modelsPanel" class="module models-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">05 / CAPABILITY ROUTER</span>
+                <h3>模型能力路由</h3>
+              </div>
+              <span class="module-badge">主机确认</span>
+            </header>
+            <div id="capabilityStrip" class="capability-strip">
+              <span data-capability="text">文本</span>
+              <span data-capability="vision">图像</span>
+              <span data-capability="audio">音频</span>
+              <span data-capability="tools">工具</span>
+            </div>
+            <label class="select-label">偏好模型
+              <select id="modelSelect"></select>
+            </label>
+            <div id="modelDecision" class="model-decision">
+              <strong>Anna 自动选择</strong>
+              <span>等待任务后生成能力要求</span>
+            </div>
+            <p class="microcopy">除文本外，具体模型能力等待 Anna 主机返回；实验版不把猜测写成能力事实。</p>
+          </article>
+
+          <article class="module response-module">
+            <header class="module-header">
+              <div>
+                <span class="module-index">06 / RESPONSE POLICY</span>
+                <h3>回复策略</h3>
+              </div>
+              <span class="module-badge warm">运用多个大模型集体思考</span>
+            </header>
+            <ul class="policy-list">
+              <li><b>理解</b><span>先确认重点，再给建议。</span></li>
+              <li><b>逻辑</b><span>区分事实、推断与未知。</span></li>
+              <li><b>自主</b><span>给选择和理由，不替用户裁决。</span></li>
+              <li><b>边界</b><span>不诊断、不操控、不制造依赖。</span></li>
+            </ul>
+          </article>
+
+          <article id="learningPanel" class="module learning-module panel-anchor">
+            <header class="module-header">
+              <div>
+                <span class="module-index">07 / MEMORY REINFORCEMENT</span>
+                <h3>自主学习与记忆强化</h3>
+              </div>
+              <span id="learningBadge" class="module-badge">等待强化指示</span>
+            </header>
+            <div class="learning-score">
+              <strong id="learningScore">--</strong>
+              <span id="learningSummary">Anna会进行自主学习并强化本次学习的记忆。</span>
+            </div>
+            <div id="learningBooks" class="learning-books" aria-live="polite"></div>
+            <div id="learningCorrections" class="learning-corrections" hidden></div>
+            <div class="module-actions">
+              <button id="learningCycleButton" class="solid-button" type="button">开始本次强化学习</button>
+            </div>
+            <p class="microcopy">用户给出强化学习指示后，Anna 会完成书目级学习、自测、复盘和经验记忆；不复制书籍正文，不保存原始私人对话，也不声称微调底层模型。</p>
+          </article>
+        </section>
+
+        <section class="conversation">
+          <div id="assistantOutput" class="assistant-output" aria-live="polite">
+            <span class="output-label">ANNA</span>
+            <h3>准备好了。</h3>
+            <p>你可以从天气、健康演示、决策梳理，或添加图片/音频开始。</p>
+          </div>
+          <div id="attachmentTray" class="attachment-tray" hidden></div>
+          <form id="assistantForm" class="composer">
+            <textarea id="messageInput" rows="2" placeholder="告诉 Anna 你现在想处理什么……"></textarea>
+            <div class="composer-bar">
+              <label class="attach-button">
+                <input id="attachmentInput" type="file" accept="image/*,audio/*" multiple hidden>
+                <span>＋ 添加图片或音频</span>
+              </label>
+              <span class="privacy-hint">独立预览只读取附件元数据</span>
+              <button id="sendButton" class="send-button" type="submit">开始</button>
+            </div>
+          </form>
+          <button id="syncButton" class="sync-button" disabled>把结构化结果交给 Anna 对话</button>
+        </section>
+      </section>
+    </main>
+    <script src="./anna-tool-ids.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

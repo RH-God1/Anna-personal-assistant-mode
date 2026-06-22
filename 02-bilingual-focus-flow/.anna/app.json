@@ -1,0 +1,7 @@
+{
+  "$schema": "anna-app-identity/v1",
+  "host": "https://anna.partners",
+  "app_id": 25,
+  "slug": "bilingual-focus-flow",
+  "first_published_at": "2026-06-16T21:22:17.448Z"
+}

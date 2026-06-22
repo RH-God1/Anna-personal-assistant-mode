@@ -1,0 +1,7 @@
+{
+  "$schema": "anna-app-identity/v1",
+  "host": "https://anna.partners",
+  "app_id": 26,
+  "slug": "private-travel-agent",
+  "first_published_at": "2026-06-16T21:23:05.518Z"
+}

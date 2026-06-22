@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "anna-personal-assistant-amadeus-travel": {
+      "type": "http",
+      "url": "http://127.0.0.1:8765/mcp",
+      "headers": {
+        "x-anna-project": "personal-assistant-mode"
+      },
+      "command": "node",
+      "args": [
+        "mcp/amadeus-travel-server.js"
+      ],
+      "env": {
+        "AMADEUS_MCP_HOST": "127.0.0.1",
+        "AMADEUS_MCP_PORT": "8765"
+      },
+      "tools": [
+        {
+          "name": "search_flights",
+          "description": "Search Amadeus sandbox flight offers. Input: origin, destination, departure_date, optional return_date, passengers. Output is normalized options with price, airline, times, baggage hint, cancellation hint, and booking_url."
+        },
+        {
+          "name": "search_hotels",
+          "description": "Search Amadeus sandbox hotel offers. Input: city, checkin_date, checkout_date, guests. The server resolves hotel IDs first, then calls hotel-offers and returns normalized hotel name, rating, nightly price, policies, and booking_url."
+        },
+        {
+          "name": "get_offer_details",
+          "description": "Return full normalized details for one cached offer_id, including cancellation policy and baggage or room policy before Anna asks the user for confirmation."
+        },
+        {
+          "name": "open_booking_url",
+          "description": "Open a selected booking_url in the system browser after Anna summarizes options and the user confirms. This tool never handles payment."
+        }
+      ]
+    }
+  }
+}

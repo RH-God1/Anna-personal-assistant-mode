@@ -1,0 +1,33 @@
+{
+  "auditLog": ".data/audit.jsonl",
+  "executas": [
+    {
+      "id": "travel",
+      "command": "node",
+      "args": [
+        "../04-travel-agent-anna-app/executas/travel-agent-node/travel_agent_plugin.cjs"
+      ],
+      "allowedTools": ["travel_agent"],
+      "timeoutMs": 5000,
+      "privacy": {
+        "readsPii": false,
+        "writesExternal": false,
+        "requiresHumanConfirmation": true
+      }
+    },
+    {
+      "id": "personal",
+      "command": "node",
+      "args": [
+        "../08-personal-assistant-anna-app/executas/personal-assistant-node/personal_assistant_plugin.cjs"
+      ],
+      "allowedTools": ["personal_assistant"],
+      "timeoutMs": 8000,
+      "privacy": {
+        "readsPii": true,
+        "writesExternal": false,
+        "requiresHumanConfirmation": true
+      }
+    }
+  ]
+}

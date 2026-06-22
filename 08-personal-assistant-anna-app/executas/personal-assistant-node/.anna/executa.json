@@ -1,0 +1,9 @@
+{
+  "$schema": "anna-executa-identity/v1",
+  "host": "https://anna.partners",
+  "executa_id": 1044,
+  "tool_id": "tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36",
+  "slug": "personal-assistant-runtime-20260620",
+  "executa_type": "tool",
+  "first_published_at": "2026-06-16T21:20:50.553Z"
+}

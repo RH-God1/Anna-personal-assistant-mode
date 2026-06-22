@@ -1,0 +1,7 @@
+{
+  "$schema": "anna-app-identity/v1",
+  "host": "https://anna.partners",
+  "app_id": 24,
+  "slug": "personal-assistant-mode",
+  "first_published_at": "2026-06-16T21:20:54.899Z"
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Travel Agent</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="top">
+        <div>
+          <p class="eyebrow">LOCAL FIRST</p>
+          <h1>Travel Agent</h1>
+        </div>
+        <span class="status-pill" id="phase">未启动</span>
+      </header>
+
+      <section class="status-block" aria-live="polite">
+        <p id="status">等待启动</p>
+        <small id="lastAction">尚未连接当前页面</small>
+      </section>
+
+      <section class="settings">
+        <label class="switch-row">
+          <span>
+            <strong>自动导航</strong>
+            <small>只处理非敏感步骤</small>
+          </span>
+          <input id="autoNavigation" type="checkbox">
+        </label>
+      </section>
+
+      <section class="actions">
+        <button id="start" class="primary">启动</button>
+        <button id="scan">扫描</button>
+        <button id="stop" class="danger">停止</button>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

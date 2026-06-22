@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>隐私旅行代理</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">HUMAN-CONTROLLED BOOKING</p>
+          <h1>隐私旅行代理</h1>
+          <p>Agent 只处理公开行程条件。姓名、证件、手机号、订单确认和付款始终由你完成。</p>
+        </div>
+        <span id="connection">独立预览</span>
+      </header>
+
+      <section class="layout">
+        <form id="searchForm" class="card">
+          <label>产品
+            <select id="product">
+              <option value="flight">机票</option>
+              <option value="rail">高铁</option>
+              <option value="bus">巴士</option>
+              <option value="hotel">酒店</option>
+            </select>
+          </label>
+          <label>模式
+            <select id="provider">
+              <option value="sandbox">本地 Sandbox</option>
+              <option value="official-handoff">官方网页人工接管</option>
+            </select>
+          </label>
+          <label>出发地 / 酒店目的地
+            <input id="origin" value="SHA" maxlength="80" required>
+          </label>
+          <label>目的地
+            <input id="destination" value="BJS" maxlength="80" required>
+          </label>
+          <label>出发 / 入住日期
+            <input id="date" type="date" value="2026-07-01" required>
+          </label>
+          <button class="primary" type="submit">搜索并启动</button>
+          <p class="privacy">本表单不接受姓名、证件、电话、邮箱、银行卡、验证码或支付密码。</p>
+        </form>
+
+        <section class="card result">
+          <div class="status-row"><strong>状态</strong><span id="status">等待搜索</span></div>
+          <div id="offer" class="offer empty">尚未选择报价</div>
+          <div class="actions">
+            <button id="travelerDone" type="button" disabled>我已在官方界面填写旅客信息</button>
+            <button id="officialOpened" type="button" disabled>已打开官方网页</button>
+            <button id="paymentDone" type="button" disabled>我已完成付款</button>
+          </div>
+          <pre id="log" aria-live="polite"></pre>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

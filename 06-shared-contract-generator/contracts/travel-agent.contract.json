@@ -1,0 +1,134 @@
+{
+  "name": "PrivateTravelAgent",
+  "version": "1.0.0",
+  "tool": "travel_agent",
+  "definitions": {
+    "Passengers": {
+      "type": "object",
+      "properties": {
+        "adults": { "type": "integer" },
+        "children": { "type": "integer" }
+      },
+      "required": ["adults", "children"]
+    },
+    "SearchQuery": {
+      "type": "object",
+      "properties": {
+        "product": { "type": "string" },
+        "origin": { "type": ["string", "null"] },
+        "destination": { "type": ["string", "null"] },
+        "departureDate": { "type": "string" },
+        "passengers": { "$ref": "#/definitions/Passengers" }
+      },
+      "required": ["product", "departureDate", "passengers"]
+    },
+    "Offer": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "schedule": { "type": "string" },
+        "price": { "type": ["number", "null"] },
+        "canAutoBook": { "type": "boolean" }
+      },
+      "required": ["id", "title", "schedule", "price", "canAutoBook"]
+    },
+    "Run": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "state": { "type": "string" },
+        "nextGate": { "type": ["string", "null"] },
+        "query": { "$ref": "#/definitions/SearchQuery" },
+        "selectedOffer": { "$ref": "#/definitions/Offer" }
+      },
+      "required": ["id", "state", "nextGate", "query", "selectedOffer"]
+    }
+  },
+  "actions": [
+    {
+      "name": "start_run",
+      "description": "Start an anonymous travel run.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "product": { "type": "string" },
+          "provider": { "type": "string" },
+          "search": { "$ref": "#/definitions/SearchQuery" }
+        },
+        "required": ["product", "provider", "search"]
+      },
+      "output": { "$ref": "#/definitions/Run" },
+      "example": {
+        "input": {
+          "product": "flight",
+          "provider": "sandbox",
+          "search": {
+            "product": "flight",
+            "origin": "SHA",
+            "destination": "BJS",
+            "departureDate": "2026-07-01",
+            "passengers": { "adults": 1, "children": 0 }
+          }
+        },
+        "output": {
+          "id": "run_example",
+          "state": "await_traveler_info",
+          "nextGate": "traveler_info",
+          "query": {
+            "product": "flight",
+            "origin": "SHA",
+            "destination": "BJS",
+            "departureDate": "2026-07-01",
+            "passengers": { "adults": 1, "children": 0 }
+          },
+          "selectedOffer": {
+            "id": "flight-sandbox-1",
+            "title": "Sandbox 机票推荐方案",
+            "schedule": "SHA → BJS · 2026-07-01",
+            "price": 680,
+            "canAutoBook": false
+          }
+        }
+      }
+    },
+    {
+      "name": "continue",
+      "description": "Advance a run through an allowed human-confirmed transition.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "run_id": { "type": "string" },
+          "event": { "type": "string" }
+        },
+        "required": ["run_id", "event"]
+      },
+      "output": { "$ref": "#/definitions/Run" },
+      "example": {
+        "input": {
+          "run_id": "run_example",
+          "event": "traveler_info_completed"
+        },
+        "output": {
+          "id": "run_example",
+          "state": "await_payment",
+          "nextGate": "payment",
+          "query": {
+            "product": "flight",
+            "origin": "SHA",
+            "destination": "BJS",
+            "departureDate": "2026-07-01",
+            "passengers": { "adults": 1, "children": 0 }
+          },
+          "selectedOffer": {
+            "id": "flight-sandbox-1",
+            "title": "Sandbox 机票推荐方案",
+            "schedule": "SHA → BJS · 2026-07-01",
+            "price": 680,
+            "canAutoBook": false
+          }
+        }
+      }
+    }
+  ]
+}

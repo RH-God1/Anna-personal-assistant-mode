@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Private Travel Booking Agent",
+  "description": "A local-first booking assistant that pauses for personal data and payment.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://*.12306.cn/*",
+    "https://*.agoda.com/*",
+    "https://*.booking.com/*",
+    "https://*.ctrip.com/*",
+    "https://*.expedia.com/*",
+    "https://*.fliggy.com/*",
+    "https://*.ly.com/*",
+    "https://*.qunar.com/*",
+    "https://*.trip.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Travel Agent"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.12306.cn/*",
+        "https://*.agoda.com/*",
+        "https://*.booking.com/*",
+        "https://*.ctrip.com/*",
+        "https://*.expedia.com/*",
+        "https://*.fliggy.com/*",
+        "https://*.ly.com/*",
+        "https://*.qunar.com/*",
+        "https://*.trip.com/*"
+      ],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

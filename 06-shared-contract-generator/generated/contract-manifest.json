@@ -1,0 +1,9 @@
+{
+  "name": "PrivateTravelAgent",
+  "version": "1.0.0",
+  "tool": "travel_agent",
+  "actions": [
+    "start_run",
+    "continue"
+  ]
+}

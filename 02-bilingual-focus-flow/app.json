@@ -1,0 +1,14 @@
+{
+  "slug": "bilingual-focus-flow",
+  "name": "双语 Focus Flow",
+  "version": "1.0.0",
+  "tagline": "A calm bilingual focus timer for Anna.",
+  "description": "中英双语专注计时器，包含可独立运行的预览、Node Executa 和专注教练 Skill。",
+  "category": "productivity",
+  "pricing_model": "free",
+  "bundled_executas": {
+    "focus-session": {
+      "path": "./executas/focus-session-node"
+    }
+  }
+}

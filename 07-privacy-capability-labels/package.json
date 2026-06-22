@@ -1,0 +1,17 @@
+{
+  "name": "anna-privacy-capability-labels",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "anna-privacy-labels": "src/cli.js"
+  },
+  "scripts": {
+    "generate": "node src/cli.js generate --manifest manifests/anna-projects.json --out generated",
+    "check": "node src/cli.js check --manifest manifests/anna-projects.json --out generated",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

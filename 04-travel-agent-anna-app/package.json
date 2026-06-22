@@ -1,0 +1,16 @@
+{
+  "name": "anna-private-travel-agent-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node server.js",
+    "check": "node --check bundle/app.js && node --check server.js && node --check executas/travel-agent-node/travel_agent_plugin.cjs",
+    "test": "node --test tests/*.test.js",
+    "validate:anna": "npx --yes @anna-ai/cli@0.1.30 validate --strict",
+    "smoke:anna": "node ../scripts/anna-harness-smoke.mjs 04-travel-agent-anna-app"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

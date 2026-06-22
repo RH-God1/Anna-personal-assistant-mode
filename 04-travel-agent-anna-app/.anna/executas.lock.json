@@ -1,0 +1,11 @@
+{
+  "$schema": "anna-executas-lock/v1",
+  "host": "https://anna.partners",
+  "executas": {
+    "travel-agent": {
+      "tool_id": "tool-duasgfuygq36136-private-travel-agent-m3sja5qv",
+      "path": "./executas/travel-agent-node",
+      "source": "published"
+    }
+  }
+}

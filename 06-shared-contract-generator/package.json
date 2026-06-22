@@ -1,0 +1,17 @@
+{
+  "name": "anna-shared-contract-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "anna-contract": "src/cli.js"
+  },
+  "scripts": {
+    "generate": "node src/cli.js generate --schema contracts/travel-agent.contract.json --out generated",
+    "check": "node src/cli.js check --schema contracts/travel-agent.contract.json --out generated",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

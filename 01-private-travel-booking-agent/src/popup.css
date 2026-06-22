@@ -1,0 +1,175 @@
+:root {
+  --ink: #151b22;
+  --muted: #5b6672;
+  --line: #dce1e8;
+  --paper: #fbfaf7;
+  --blue: #2458d3;
+  --green: #1f7a56;
+  --amber: #9b6308;
+  --red: #b73535;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 340px;
+  color: var(--ink);
+  background: #ede9df;
+  font-family: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.popup-shell {
+  min-height: 360px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(36, 88, 211, 0.08), transparent 42%),
+    linear-gradient(315deg, rgba(31, 122, 86, 0.1), transparent 36%),
+    var(--paper);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 25px;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 116px;
+  min-height: 28px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.status-block {
+  min-height: 112px;
+  padding: 14px;
+  border: 1px solid rgba(21, 27, 34, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.status-block p {
+  margin: 0 0 9px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.status-block small,
+.switch-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.settings {
+  margin: 14px 0;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.switch-row strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.switch-row input {
+  width: 42px;
+  height: 24px;
+  accent-color: var(--blue);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+button:hover {
+  border-color: #9ba8b6;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(36, 88, 211, 0.32);
+  outline-offset: 2px;
+}
+
+button.primary {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #ffffff;
+}
+
+button.danger {
+  color: var(--red);
+}
+
+.status-block[data-phase="running"] {
+  border-color: rgba(36, 88, 211, 0.35);
+}
+
+.status-block[data-phase="needs_user_input"],
+.status-block[data-phase="user_confirmation"] {
+  border-color: rgba(155, 99, 8, 0.42);
+}
+
+.status-block[data-phase="payment_hold"] {
+  border-color: rgba(183, 53, 53, 0.42);
+}
+
+.status-block[data-phase="post_payment"] {
+  border-color: rgba(31, 122, 86, 0.42);
+}

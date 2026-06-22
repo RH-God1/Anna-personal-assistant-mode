@@ -1,0 +1,13 @@
+{
+  "name": "tool-test-private-travel-agent-12345678",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "license": "MIT",
+  "bin": {
+    "tool-test-private-travel-agent-12345678": "travel_agent_plugin.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

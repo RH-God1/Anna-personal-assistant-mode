@@ -1,0 +1,11 @@
+{
+  "$schema": "anna-executas-lock/v1",
+  "host": "https://anna.partners",
+  "executas": {
+    "focus-session": {
+      "tool_id": "tool-duasgfuygq36136-focus-session-kbtk9b2g",
+      "path": "./executas/focus-session-node",
+      "source": "published"
+    }
+  }
+}
