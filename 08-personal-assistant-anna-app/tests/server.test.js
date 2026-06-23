@@ -299,10 +299,28 @@ test("local preview serves UI and assistant API", async (t) => {
   assert.equal(missingConfirmation.confirmation.status, "PENDING");
   assert.equal(missingConfirmation.order_results.length, 0);
 
-  const bookingConfirmResponse = await fetch(`${base}/api/booking/confirm`, {
+  const missingUserInfoResponse = await fetch(`${base}/api/booking/confirm`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ confirmationId: prepared.confirmationId, userConfirmed: true })
+  });
+  assert.equal(missingUserInfoResponse.status, 200);
+  const missingUserInfo = await missingUserInfoResponse.json();
+  assert.equal(missingUserInfo.code, "USER_INFO_REQUIRED");
+  assert.equal(missingUserInfo.confirmation.status, "PENDING");
+
+  const bookingConfirmResponse = await fetch(`${base}/api/booking/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      confirmationId: prepared.confirmationId,
+      userConfirmed: true,
+      userCompletion: {
+        travelerDisplayNames: ["Anna Test"],
+        handoffChoice: "supplier_checkout",
+        checkoutResponsible: true
+      }
+    })
   });
   assert.equal(bookingConfirmResponse.status, 200);
   const bookingConfirm = await bookingConfirmResponse.json();

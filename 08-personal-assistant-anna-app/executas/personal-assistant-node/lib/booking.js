@@ -6,6 +6,7 @@ const ITEM_TYPES = new Set(["flight", "hotel"]);
 const CONFIRMATION_TTL_MS = 15 * 60 * 1000;
 const SENSITIVE_KEY_PATTERN = /passport|document|identity|id.?card|national.?id|bank|card|cvv|cvc|payment|password|secret|token|证件|身份证|护照|银行卡|卡号|验证码|支付密码/i;
 const SENSITIVE_VALUE_PATTERN = /\b(?:\d[ -]*?){13,19}\b|\b[A-Z]\d{7,9}\b|\b1[3-9]\d{9}\b/i;
+const USER_HANDOFF_CHOICES = new Set(["supplier_checkout", "saved_supplier_profile"]);
 
 export function createBookingStore({
   now = () => new Date(),
@@ -132,6 +133,7 @@ export function createBookingStore({
         provider_order_id: null,
         provider_booking_id: null,
         order_information: null,
+        user_completion: null,
         confirmation_queue_id: null,
         payment_policy: paymentPolicy(),
         safety_checks: [
@@ -239,6 +241,19 @@ export function createBookingStore({
           payment_policy: paymentPolicy()
         };
       }
+      const userCompletion = sanitizeUserCompletion(args.userCompletion || args.user_completion, confirmation, now);
+      if (userCompletion.error) {
+        return {
+          status: "PENDING",
+          code: "USER_INFO_REQUIRED",
+          confirmation: publicConfirmation(confirmation),
+          order_results: [],
+          checkout_handoff_queue_id: null,
+          message: userCompletion.error,
+          payment_policy: paymentPolicy()
+        };
+      }
+      confirmation.user_completion = userCompletion;
       if (safetyState && confirmation.confirmation_queue_id) {
         safetyState.resolveConfirmation({
           id: confirmation.confirmation_queue_id,
@@ -345,6 +360,7 @@ function buildOrderInformation({ confirmation, orderResults }) {
     provider_booking_id: confirmation.provider_booking_id,
     provider_order_url: primary.order_url || null,
     provider_order_reference: primary.order_reference || primary.provider_order_id || null,
+    user_completion: confirmation.user_completion || null,
     total_currency: confirmation.total_currency,
     total_amount: confirmation.total_amount,
     payment_required: orderResults.some((item) => item.payment_required !== false),
@@ -467,6 +483,45 @@ function sanitizeTravelers(input, args) {
   };
 }
 
+function sanitizeUserCompletion(input, confirmation, now) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "请先在 Anna App 确认页由你本人填写旅客/住客展示名，并选择后续资料填写方式。" };
+  }
+  try {
+    assertNoSensitiveData(input, "userCompletion");
+  } catch (error) {
+    return { error: error.message };
+  }
+  const count = Math.max(1, Number(confirmation.traveler_snapshot?.count || 1));
+  const names = input.travelerDisplayNames || input.traveler_display_names || [];
+  if (!Array.isArray(names) || names.length < count) {
+    return { error: "请为每位乘客/住客填写展示名或称呼；不要在 Anna App 中填写证件号、手机号、银行卡或验证码。" };
+  }
+  const displayNames = names.slice(0, count).map((name) => String(name || "").trim());
+  if (displayNames.some((name) => !name)) {
+    return { error: "请为每位乘客/住客填写展示名或称呼；真实证件信息仍需在供应商/官方 checkout 页面由你本人填写。" };
+  }
+  const handoffChoice = String(input.handoffChoice || input.handoff_choice || "").trim();
+  if (!USER_HANDOFF_CHOICES.has(handoffChoice)) {
+    return { error: "请选择后续资料填写方式：供应商 checkout 本人填写，或使用供应商账户已保存资料。" };
+  }
+  if (input.checkoutResponsible !== true && input.checkout_responsible !== true) {
+    return { error: "请确认真实姓名、证件、联系方式、付款信息和验证码都由你本人在供应商/官方页面完成。" };
+  }
+  return {
+    traveler_count: count,
+    traveler_display_names: displayNames.map(maskName),
+    handoff_choice: handoffChoice,
+    checkout_responsible: true,
+    forbidden_plaintext_saved: {
+      documents: false,
+      payment_cards: false,
+      verification_codes: false
+    },
+    completed_at: now().toISOString()
+  };
+}
+
 function maskName(value) {
   if (!value) return "未填写";
   const text = String(value).trim();
@@ -503,6 +558,7 @@ function publicConfirmation(confirmation) {
     flight_snapshot: confirmation.flight_snapshot,
     hotel_snapshot: confirmation.hotel_snapshot,
     traveler_snapshot: confirmation.traveler_snapshot,
+    user_completion: confirmation.user_completion || null,
     total_currency: confirmation.total_currency,
     total_amount: confirmation.total_amount,
     status: confirmation.status,

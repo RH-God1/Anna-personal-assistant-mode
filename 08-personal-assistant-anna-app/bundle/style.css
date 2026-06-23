@@ -607,6 +607,7 @@ button { color: inherit; }
   margin-top: 14px;
 }
 .confirmation-card,
+.confirmation-user-details,
 .confirmation-checklist {
   padding: 20px;
   border: 1px solid var(--line);
@@ -614,6 +615,7 @@ button { color: inherit; }
   background: rgba(255,255,255,0.82);
 }
 .confirmation-card h2,
+.confirmation-user-details h2,
 .confirmation-checklist h2 {
   margin: 0 0 14px;
   font-family: "Iowan Old Style", "Songti SC", serif;
@@ -641,6 +643,63 @@ button { color: inherit; }
   display: grid;
   gap: 10px;
 }
+.confirmation-user-details {
+  grid-column: 1 / -1;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.9), rgba(246,242,255,0.88)),
+    rgba(255,255,255,0.82);
+}
+.confirmation-user-intro,
+.confirmation-user-warning {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.confirmation-user-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.confirmation-user-fields label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.confirmation-user-fields input,
+.confirmation-user-fields select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.9);
+  color: var(--ink);
+  outline: none;
+}
+.confirmation-user-fields input:focus,
+.confirmation-user-fields select:focus {
+  border-color: rgba(124,92,255,0.55);
+  box-shadow: 0 0 0 3px rgba(124,92,255,0.12);
+}
+.confirmation-user-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.confirmation-user-ack input { margin-top: 2px; accent-color: var(--violet); }
+.confirmation-user-warning {
+  margin: 12px 0 0;
+  color: #9d3d54;
+  font-weight: 800;
+}
+.confirmation-user-warning.ready { color: #267553; }
 .confirmation-checklist label {
   display: flex;
   align-items: flex-start;
@@ -847,6 +906,7 @@ button { color: inherit; }
   .learning-books { grid-template-columns: 1fr; }
   .learning-score { grid-template-columns: 1fr; }
   .confirmation-body { grid-template-columns: 1fr; }
+  .confirmation-user-fields { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
   .mini-orb { display: none; }

@@ -362,7 +362,12 @@ test("booking prepare supports generic flight_hotel confirmations without paymen
 
   const confirmed = await service.bookingConfirm({
     confirmationId: prepared.confirmationId,
-    userConfirmed: true
+    userConfirmed: true,
+    userCompletion: {
+      travelerDisplayNames: ["王小明"],
+      handoffChoice: "supplier_checkout",
+      checkoutResponsible: true
+    }
   });
   assert.equal(confirmed.code, "ORDER_CREATED");
   assert.equal(confirmed.confirmation.status, "ORDER_CREATED");
@@ -415,9 +420,22 @@ test("booking confirm requires explicit user confirmation before creating suppli
   assert.equal(unconfirmed.confirmation.provider_order_id, null);
   assert.equal(unconfirmed.order_results.length, 0);
 
-  const confirmed = await service.bookingConfirm({
+  const missingUserInfo = await service.bookingConfirm({
     confirmationId: prepared.confirmationId,
     userConfirmed: true
+  });
+  assert.equal(missingUserInfo.code, "USER_INFO_REQUIRED");
+  assert.equal(missingUserInfo.status, "PENDING");
+  assert.equal(missingUserInfo.confirmation.provider_order_id, null);
+
+  const confirmed = await service.bookingConfirm({
+    confirmationId: prepared.confirmationId,
+    userConfirmed: true,
+    userCompletion: {
+      travelerDisplayNames: ["Anna Test"],
+      handoffChoice: "supplier_checkout",
+      checkoutResponsible: true
+    }
   });
   assert.equal(confirmed.code, "ORDER_CREATED");
   assert.match(confirmed.confirmation.provider_order_id, /^duffel_test_order_/);
@@ -466,7 +484,12 @@ test("permission registry allows confirmed supplier order creation but payment s
   const confirmed = await service.bookingConfirm({
     confirmationId: prepared.confirmationId,
     userConfirmed: true,
-    createProviderOrder: false
+    createProviderOrder: false,
+    userCompletion: {
+      travelerDisplayNames: ["测试"],
+      handoffChoice: "saved_supplier_profile",
+      checkoutResponsible: true
+    }
   });
   assert.equal(confirmed.code, "USER_CHECKOUT_REQUIRED");
   assert.equal(confirmed.order_results.length, 0);
@@ -509,6 +532,49 @@ test("booking prepare rejects documents and card-like sensitive fields", async (
     }),
     /Sensitive user data/
   );
+});
+
+test("booking confirm requires user-filled handoff details and rejects sensitive values", async () => {
+  const service = createAssistantService();
+  const prepared = await service.bookingPrepare({
+    bookingType: "flight",
+    flightOfferId: "duffel_flight_demo_1",
+    flightProvider: "duffel",
+    flight: {
+      origin: "SHA",
+      destination: "NRT",
+      departureDate: "2026-07-01",
+      passengers: { adults: 1 }
+    }
+  });
+
+  const sensitiveCompletion = await service.bookingConfirm({
+    confirmationId: prepared.confirmationId,
+    userConfirmed: true,
+    userCompletion: {
+      travelerDisplayNames: ["E12345678"],
+      handoffChoice: "supplier_checkout",
+      checkoutResponsible: true
+    }
+  });
+  assert.equal(sensitiveCompletion.code, "USER_INFO_REQUIRED");
+  assert.match(sensitiveCompletion.message, /Sensitive user data|护照|证件/);
+
+  const acceptedCompletion = await service.bookingConfirm({
+    confirmationId: prepared.confirmationId,
+    userConfirmed: true,
+    userCompletion: {
+      travelerDisplayNames: ["Li"],
+      handoffChoice: "supplier_checkout",
+      checkoutResponsible: true
+    }
+  });
+  assert.equal(acceptedCompletion.code, "ORDER_CREATED");
+  assert.deepEqual(acceptedCompletion.confirmation.user_completion.forbidden_plaintext_saved, {
+    documents: false,
+    payment_cards: false,
+    verification_codes: false
+  });
 });
 
 test("personal assistant official handoff creates anonymous real-site search links", () => {

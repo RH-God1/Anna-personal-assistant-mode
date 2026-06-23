@@ -35,6 +35,7 @@ const state = {
 
 const LOCAL_FALLBACK_REASON = "Anna runtime tool registry unavailable; using browser-only handoff mode.";
 const FALLBACK_CONFIRMATIONS_KEY = "anna-personal-assistant-fallback-confirmations";
+const CONFIRMATION_SENSITIVE_VALUE_PATTERN = /\b(?:\d[ -]*?){13,19}\b|\b[A-Z]\d{7,9}\b|\b1[3-9]\d{9}\b/i;
 
 const els = Object.fromEntries([
   "connectionStatus", "personaState", "personaDetail", "weatherBadge",
@@ -891,7 +892,8 @@ async function renderBookingConfirmationPage(confirmationId) {
   shell.append(page);
   try {
     const confirmation = await callAction("booking_get_confirmation", { confirmationId });
-    body.replaceChildren(...confirmationSections(confirmation), confirmationChecklist(confirmation));
+    const userCompletionPanel = confirmationUserCompletion(confirmation);
+    body.replaceChildren(...confirmationSections(confirmation), userCompletionPanel, confirmationChecklist(confirmation, userCompletionPanel));
   } catch (error) {
     body.textContent = `确认记录读取失败：${error.message || error}`;
   }
@@ -956,12 +958,96 @@ function confirmationCard(title, rows) {
   return card;
 }
 
-function confirmationChecklist(confirmation) {
+function confirmationUserCompletion(confirmation) {
+  const panel = document.createElement("article");
+  panel.className = "confirmation-user-details";
+  const count = Math.max(1, Number(confirmation.traveler_snapshot?.count || 1));
+  const title = document.createElement("h2");
+  title.textContent = "你本人填写的关键信息";
+  const intro = document.createElement("p");
+  intro.className = "confirmation-user-intro";
+  intro.textContent = "这里只填写展示名、称呼和资料接管方式。真实姓名、证件号、电话、邮箱、银行卡、验证码必须在供应商或官方 checkout 页面由你本人填写，Anna 不保存这些敏感信息。";
+  const fields = document.createElement("div");
+  fields.className = "confirmation-user-fields";
+  for (let index = 0; index < count; index += 1) {
+    const label = document.createElement("label");
+    const caption = document.createElement("span");
+    caption.textContent = `乘客/住客 ${index + 1} 展示名或称呼`;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.autocomplete = "off";
+    input.maxLength = 40;
+    input.dataset.role = "traveler-display-name";
+    input.placeholder = "例如 Li / 王女士";
+    label.append(caption, input);
+    fields.append(label);
+  }
+  const handoff = document.createElement("label");
+  const handoffCaption = document.createElement("span");
+  handoffCaption.textContent = "后续资料填写方式";
+  const select = document.createElement("select");
+  select.dataset.role = "handoff-choice";
+  [
+    ["", "请选择"],
+    ["supplier_checkout", "我将在供应商/官方 checkout 页面亲自填写"],
+    ["saved_supplier_profile", "我会使用供应商账户中已保存的乘客/住客资料"]
+  ].forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    select.append(option);
+  });
+  handoff.append(handoffCaption, select);
+  fields.append(handoff);
+  const ack = document.createElement("label");
+  ack.className = "confirmation-user-ack";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.dataset.role = "checkout-responsible";
+  const ackText = document.createElement("span");
+  ackText.textContent = "我知道真实姓名、证件、联系方式、付款信息和验证码都由我本人在供应商/官方页面完成，不在 Anna App 中填写。";
+  ack.append(checkbox, ackText);
+  const warning = document.createElement("p");
+  warning.className = "confirmation-user-warning";
+  warning.textContent = "请先完成上方字段。";
+  panel.append(title, intro, fields, ack, warning);
+  return panel;
+}
+
+function readConfirmationUserCompletion(panel) {
+  const inputs = [...panel.querySelectorAll('[data-role="traveler-display-name"]')];
+  const names = inputs.map((input) => input.value.trim());
+  if (names.some((name) => !name)) {
+    return { ok: false, message: "请为每位乘客/住客填写展示名或称呼。" };
+  }
+  if (names.some((name) => CONFIRMATION_SENSITIVE_VALUE_PATTERN.test(name))) {
+    return { ok: false, message: "不要在 Anna App 中填写护照号、手机号、银行卡号或验证码；这些只能在供应商/官方 checkout 页面由你本人填写。" };
+  }
+  const handoffChoice = panel.querySelector('[data-role="handoff-choice"]')?.value || "";
+  if (!handoffChoice) {
+    return { ok: false, message: "请选择后续资料填写方式。" };
+  }
+  const checkoutResponsible = panel.querySelector('[data-role="checkout-responsible"]')?.checked === true;
+  if (!checkoutResponsible) {
+    return { ok: false, message: "请确认敏感资料和付款信息将由你本人在供应商/官方页面完成。" };
+  }
+  return {
+    ok: true,
+    value: {
+      travelerDisplayNames: names,
+      handoffChoice,
+      checkoutResponsible
+    }
+  };
+}
+
+function confirmationChecklist(confirmation, userCompletionPanel) {
   const panel = document.createElement("article");
   panel.className = "confirmation-checklist";
   const title = document.createElement("h2");
   title.textContent = "人工确认";
   const checks = [
+    "我已在上方亲自填写展示名/称呼，并选择后续资料填写方式",
     "我已核对航班/酒店日期、人数、价格和库存提示",
     "我已阅读行李信息、退改签规则和酒店取消政策",
     "我授权 Anna 创建供应商订单记录，但不付款、不出票、不保存银行卡信息",
@@ -972,13 +1058,25 @@ function confirmationChecklist(confirmation) {
   button.type = "button";
   button.textContent = "确认并创建订单记录";
   button.disabled = true;
-  const boxes = checks.map((copy) => {
+  let boxes = [];
+  const syncButtonState = () => {
+    const completion = readConfirmationUserCompletion(userCompletionPanel);
+    const warning = userCompletionPanel.querySelector(".confirmation-user-warning");
+    if (warning) {
+      warning.textContent = completion.ok ? "已完成：Anna 只保存脱敏展示名和接管方式，不保存证件或付款信息。" : completion.message;
+      warning.classList.toggle("ready", completion.ok);
+    }
+    button.disabled = !completion.ok || !boxes.every((item) => item.querySelector("input").checked);
+  };
+  userCompletionPanel.querySelectorAll("input, select").forEach((field) => {
+    field.addEventListener("input", syncButtonState);
+    field.addEventListener("change", syncButtonState);
+  });
+  boxes = checks.map((copy) => {
     const label = document.createElement("label");
     const input = document.createElement("input");
     input.type = "checkbox";
-    input.addEventListener("change", () => {
-      button.disabled = !boxes.every((item) => item.querySelector("input").checked);
-    });
+    input.addEventListener("change", syncButtonState);
     const span = document.createElement("span");
     span.textContent = copy;
     label.append(input, span);
@@ -993,10 +1091,17 @@ function confirmationChecklist(confirmation) {
     orderInfo.replaceChildren();
     result.textContent = "正在最终校验价格和库存...";
     try {
+      const completion = readConfirmationUserCompletion(userCompletionPanel);
+      if (!completion.ok) {
+        result.textContent = completion.message;
+        syncButtonState();
+        return;
+      }
       const response = await callAction("booking_confirm", {
         confirmationId: confirmation.id,
         userConfirmed: true,
-        createProviderOrder: true
+        createProviderOrder: true,
+        userCompletion: completion.value
       });
       if (response.code === "ORDER_CREATED") {
         const orderId = response.confirmation?.provider_order_id || response.order_results?.[0]?.provider_order_id || "已创建";
@@ -1788,6 +1893,7 @@ function fallbackBookingPrepare(args = {}) {
     provider_order_id: null,
     provider_booking_id: null,
     order_information: null,
+    user_completion: null,
     confirmation_queue_id: null,
     checkout_handoff_queue_id: null,
     order_results: [],
@@ -1827,6 +1933,18 @@ function fallbackBookingConfirm(args = {}) {
       checkout_handoff_queue_id: null
     };
   }
+  const completion = fallbackUserCompletion(args.userCompletion || args.user_completion, confirmation);
+  if (completion.error) {
+    return {
+      code: "USER_INFO_REQUIRED",
+      status: "PENDING",
+      message: completion.error,
+      confirmation,
+      order_results: [],
+      checkout_handoff_queue_id: null
+    };
+  }
+  confirmation.user_completion = completion;
   confirmation.status = args.createProviderOrder === false || args.create_provider_order === false
     ? "USER_CHECKOUT_REQUIRED"
     : "ORDER_CREATED";
@@ -1882,6 +2000,41 @@ function fallbackBookingConfirm(args = {}) {
     confirmation,
     order_results: confirmation.order_results,
     order_information: confirmation.order_information
+  };
+}
+
+function fallbackUserCompletion(input, confirmation) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "请先在 Anna App 确认页由你本人填写旅客/住客展示名，并选择后续资料填写方式。" };
+  }
+  const count = Math.max(1, Number(confirmation.traveler_snapshot?.count || 1));
+  const names = Array.isArray(input.travelerDisplayNames || input.traveler_display_names)
+    ? (input.travelerDisplayNames || input.traveler_display_names).slice(0, count).map((name) => String(name || "").trim())
+    : [];
+  if (names.length < count || names.some((name) => !name)) {
+    return { error: "请为每位乘客/住客填写展示名或称呼。" };
+  }
+  if (names.some((name) => CONFIRMATION_SENSITIVE_VALUE_PATTERN.test(name))) {
+    return { error: "不要在 Anna App 中填写护照号、手机号、银行卡号或验证码。" };
+  }
+  const handoffChoice = String(input.handoffChoice || input.handoff_choice || "").trim();
+  if (!["supplier_checkout", "saved_supplier_profile"].includes(handoffChoice)) {
+    return { error: "请选择后续资料填写方式。" };
+  }
+  if (input.checkoutResponsible !== true && input.checkout_responsible !== true) {
+    return { error: "请确认真实身份、联系方式、付款信息和验证码由你本人在供应商/官方页面完成。" };
+  }
+  return {
+    traveler_count: count,
+    traveler_display_names: names.map((name) => name.length <= 1 ? "*" : `${name.slice(0, 1)}${"*".repeat(Math.min(4, name.length - 1))}`),
+    handoff_choice: handoffChoice,
+    checkout_responsible: true,
+    forbidden_plaintext_saved: {
+      documents: false,
+      payment_cards: false,
+      verification_codes: false
+    },
+    completed_at: new Date().toISOString()
   };
 }
 
