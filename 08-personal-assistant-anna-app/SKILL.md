@@ -107,7 +107,7 @@ Flights + hotel: [combined total]
 - After the summary, ask exactly: `Shall I open the [airline/hotel] checkout page for you?` If there is only one combined checkout URL, ask: `Shall I open the checkout page for you?`
 - Wait for an explicit `yes` in the same conversation turn before calling `open_booking_url`. Ambiguous replies, "go ahead" from an earlier turn, or "book it directly" do not count.
 - In the same booking session, reconfirm before every `open_booking_url` call. Each explicit yes permits at most one checkout URL. If the user wants both flight and hotel checkout pages opened, open one, then ask again before the second.
-- `open_booking_url` is the only MCP tool with real-world side effects. It only opens the selected URL in the system browser, records that URL, and reports that the page was opened. It must not collect identity data, create orders, issue tickets, hold rooms, or handle payment.
+- `open_booking_url` opens the selected URL in the system browser, records that URL, and reports that the page was opened. It must not collect identity data, issue tickets, hold rooms, or handle payment. Supplier order creation is handled only by the backend `booking_confirm` path after explicit user confirmation.
 - The Amadeus MCP server obtains OAuth2 client-credentials tokens from `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`, caches token expiry, normalizes Amadeus responses, and falls back to sandbox fixtures when credentials are absent for local tests.
 - Use Duffel sandbox/test and Amadeus sandbox as the only structured travel suppliers in this phase.
 - Never call Duffel or Amadeus directly from the frontend or Anna prompt. Route through the personal-assistant backend/tool or the registered Amadeus MCP server.
@@ -118,10 +118,10 @@ Flights + hotel: [combined total]
 - If Duffel returns no offers, no availability, unsupported route, or equivalent supplier no-result state, say exactly: `当前通过 Duffel 没有查到可预订报价。`
 - Do not imply there are no real-world flights, hotels, airlines, routes, or rooms just because Duffel returned no result.
 - For official website handoff, pass only anonymous itinerary fields such as origin, destination, dates, nights, passenger/guest counts, cabin, rough budget, and site choice.
-- Reject or defer traveler identity, passport, ID card, phone, email, saved passenger profile, payment card, CVV/CVC, bank account, password, verification code, login, final order confirmation, and payment.
+- Reject or defer traveler identity, passport, ID card, phone, email, saved passenger profile, payment card, CVV/CVC, bank account, password, verification code, login, final ticketing confirmation, and payment.
 - Do not store, repeat, or quote card data. If the user shares card data, tell them to enter it directly on the checkout page.
-- Treat "帮我订/预订/book" as sandbox search, compare, prepare, and user-confirmed confirmation-page review work. Do not auto-book, create supplier orders, or auto-pay.
-- `booking_confirm` must revalidate price/inventory and then return `USER_CHECKOUT_REQUIRED`; it must not call provider `createOrder`, issue tickets, or collect payment.
+- Treat "帮我订/预订/book" as search, compare, prepare, and user-confirmed confirmation-page review work. Do not auto-pay or bypass traveler identity/payment pages.
+- `booking_confirm` must revalidate price/inventory and, after explicit user confirmation, may call the backend provider `createOrder` to create a supplier order or hold record. It must return `order_information` with provider order id/reference/status and the next user-controlled action, and Dashboard must display that order information immediately after creation. It must not issue tickets, collect payment, store payment cards, or bypass user-controlled identity/payment steps.
 - Before any booking confirmation, require current price, inventory, cancellation/refund/change terms, baggage or room policy, total amount, and user review.
 - Booking confirmation pages opened inside Anna Dashboard must preserve the app window query string (`wid` and runtime token) and read records through `booking_get_confirmation`; do not fall back to hosted static `/api` routes.
 - Apply preferences stated in the current session, such as window seat, direct flights first, or hotel budget. If preferences conflict with available results, show the best alternative and explain the tradeoff. Do not invent preferences the user did not state.

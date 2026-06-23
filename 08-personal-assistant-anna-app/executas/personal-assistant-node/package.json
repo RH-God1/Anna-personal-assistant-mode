@@ -1,6 +1,6 @@
 {
   "name": "anna-personal-assistant-executa",
-  "version": "0.1.18",
+  "version": "0.1.26",
   "private": true,
   "type": "module",
   "bin": {

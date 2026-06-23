@@ -47,14 +47,14 @@ const DEFAULT_PERMISSIONS = Object.freeze([
   },
   {
     id: "booking.create_order",
-    label: "Create supplier order",
+    label: "Create supplier order after explicit user confirmation",
     scope: "booking",
-    status: "blocked_in_this_runtime",
+    status: "requires_user_confirmation",
     external_api: true,
-    reads_sensitive_data: true,
+    reads_sensitive_data: false,
     writes_external: true,
-    allowed_data: [],
-    forbidden_data: ["all_real_order_creation"]
+    allowed_data: ["confirmation_id", "offer_id", "price_snapshot", "inventory_snapshot", "masked_traveler_label"],
+    forbidden_data: ["passport", "id_card", "phone", "email", "payment_card", "cvv", "payment_password"]
   },
   {
     id: "payment.confirm",
@@ -157,7 +157,7 @@ export function createSafetyState({ now = () => new Date(), maxConfirmations = 1
           max_items: limit,
           storage: "memory_only"
         },
-        order_creation: "blocked_in_this_runtime",
+        order_creation: "requires_user_confirmation",
         payment: "blocked_in_this_runtime"
       };
     }

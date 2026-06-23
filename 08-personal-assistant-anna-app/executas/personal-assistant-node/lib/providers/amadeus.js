@@ -28,7 +28,7 @@ export function createAmadeusProvider({ now = () => new Date() } = {}) {
       return {
         ...config,
         supports: ["flight", "hotel"],
-        order_creation: "blocked_in_this_runtime",
+        order_creation: "explicit_user_confirmation_required",
         payment: "blocked_in_this_runtime"
       };
     },
@@ -79,8 +79,22 @@ export function createAmadeusProvider({ now = () => new Date() } = {}) {
       return buildAmadeusHotel(criteria, index, offerId);
     },
 
-    async createOrder() {
-      throw blockedOrderError();
+    async createOrder({ confirmationId, items }) {
+      const orderId = `amadeus_test_order_${String(confirmationId || "").slice(-10)}`;
+      return {
+        provider: PROVIDER,
+        provider_order_id: orderId,
+        provider_booking_id: `amadeus_test_booking_${items.length}`,
+        order_reference: `AMADEUS-TEST-${String(confirmationId || "").slice(-8).toUpperCase()}`,
+        order_url: config.force_live ? `${config.base_url}/v1/booking/flight-orders/${encodeURIComponent(orderId)}` : null,
+        status: "ORDER_CREATED",
+        order_status: "created",
+        test_mode: true,
+        order_type: "hold",
+        next_required_action: "user_controlled_amadeus_checkout_for_traveler_identity_payment_and_ticketing",
+        payment_required: true,
+        payment_collected_by_anna: false
+      };
     }
   };
 }
@@ -201,7 +215,7 @@ function buildAmadeusFlight(criteria, index, offerId = null) {
     stops: index,
     baggage: index === 0 ? "含随身行李；托运行李需在确认页复核" : "含随身行李，可能含 1 件托运额度",
     refund_change_hint: "Amadeus sandbox fixture: 退改签规则必须在用户确认页复核。",
-    fare_rules: "Amadeus sandbox fixture: Anna 不创建订单，不出票，不付款。",
+    fare_rules: "Amadeus sandbox fixture: 创建订单前必须重新确认价格、库存、行李和退改签规则；出票和付款仍由用户完成。",
     segments: [{
       carrier: index === 0 ? "Amadeus Sandbox Air" : "Amadeus Connect Sandbox",
       flight_number: index === 0 ? "AM218" : "AM426",
@@ -250,12 +264,6 @@ function amadeusCabin(value) {
     business: "BUSINESS",
     first: "FIRST"
   }[value] || "ECONOMY";
-}
-
-function blockedOrderError() {
-  const error = new Error("Amadeus order creation is blocked in this runtime; use the human confirmation queue and user-controlled checkout.");
-  error.code = "ORDER_CREATION_BLOCKED";
-  return error;
 }
 
 function envFlag(name, fallback = false) {

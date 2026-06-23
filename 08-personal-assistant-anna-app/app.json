@@ -1,7 +1,7 @@
 {
   "slug": "personal-assistant-mode",
   "name": "Anna 个人助理模式",
-  "version": "0.1.32",
+  "version": "0.1.42",
   "tagline": "A multimodal, context-aware and privacy-first personal mode for Anna.",
   "description": "个人助理实验模式，支持中文与英文语言系统，包含模型能力路由、天气与空气质量、经同意的健康数据桥接、机票酒店预确认，以及用户指令触发的自主学习与记忆强化。",
   "category": "utilities",

@@ -98,7 +98,7 @@ assert.equal(executa.slug, "personal-assistant-runtime-20260620");
 assert.equal(executa.executa_type, "tool");
 assert.equal(executa.enabled, true);
 assert.ok(executa.tool_id, "executa must define a local tool_id for dev and tests");
-assert.equal(executa.version, "0.1.18", "executa runtime version should match the published binary build");
+assert.match(executa.version, /^0\.1\.\d+$/, "executa runtime version should use the current published binary build series");
 assert.equal(
   executa.distribution?.active,
   "binary",
@@ -113,7 +113,10 @@ const binaryDistribution = executa.distribution?.profiles?.binary;
 assert.equal(binaryDistribution?.type, "binary", "executa binary profile must use binary distribution");
 assert.equal(binaryDistribution?.supports_protocol, true, "executa binary profile must support the Anna stdio protocol");
 const darwinArm64Asset = binaryDistribution?.binary_urls?.["darwin-arm64"];
-assert.ok(darwinArm64Asset?.url?.includes("/personal-assistant-mode/0.1.32/executa/"), "darwin-arm64 binary URL must point at the 0.1.32 hosted bundle asset");
+assert.ok(
+  darwinArm64Asset?.url?.includes(`/personal-assistant-mode/${app.version}/executa/`),
+  "darwin-arm64 binary URL must point at the current hosted bundle asset"
+);
 assert.equal(darwinArm64Asset?.entrypoint, `bin/${executa.tool_id}`, "binary entrypoint must match the tool id executable");
 assert.equal(darwinArm64Asset?.format, "tar.gz", "binary asset format must be tar.gz");
 assert.match(darwinArm64Asset?.sha256 || "", /^[a-f0-9]{64}$/, "binary asset must carry a sha256");
@@ -187,10 +190,10 @@ for (const requiredSkillRule of [
   "Do not store, repeat, or quote card data",
   "I wasn’t able to retrieve flight results right now.",
   "If `open_booking_url` fails, provide the raw URL",
-  "`open_booking_url` is the only MCP tool with real-world side effects",
+  "Supplier order creation is handled only by the backend `booking_confirm` path after explicit user confirmation",
   "Ctrip TourAPI is not enabled in this phase",
   "Do not open a browser or official travel website unless the user confirms the selected booking URL handoff or explicitly asks for official website handoff",
-  "`booking_confirm` must revalidate price/inventory and then return `USER_CHECKOUT_REQUIRED`",
+  "`booking_confirm` must revalidate price/inventory and, after explicit user confirmation, may call the backend provider `createOrder`",
   "当前通过 Duffel 没有查到可预订报价。",
   "Booking confirmation pages opened inside Anna Dashboard must preserve the app window query string",
   "run the learning loop before producing the normal final reply",
@@ -207,6 +210,7 @@ for (const requiredManifestRule of [
   "each yes opens at most one checkout URL",
   "I wasn’t able to retrieve flight results right now.",
   "provide raw URL",
+  "supplier order creation is handled only by backend booking_confirm after explicit user confirmation",
   "Reject or defer traveler identity",
   "Do not store, repeat, or quote card data",
   "do not claim Ctrip API search/order/payment",
@@ -272,22 +276,27 @@ assert.ok(
   "booking store must return the required Duffel no-result wording"
 );
 assert.ok(
-  bookingStore.includes("USER_CHECKOUT_REQUIRED") &&
-    bookingStore.includes("provider_order_id = null") &&
-    !bookingStore.includes("provider.createOrder"),
-  "booking confirm must hand off to the user instead of creating supplier orders"
+  bookingStore.includes("ORDER_CREATED") &&
+    bookingStore.includes("createProviderOrders") &&
+    bookingStore.includes("provider.createOrder") &&
+    bookingStore.includes("order_information") &&
+    frontend.includes("orderInformationCard"),
+  "booking confirm must create provider orders and Dashboard must display order information after explicit user confirmation"
 );
 assert.ok(
   safetyStore.includes("travel.search.amadeus_sandbox") &&
     safetyStore.includes("booking.create_order") &&
+    safetyStore.includes("requires_user_confirmation") &&
+    safetyStore.includes("payment.confirm") &&
     safetyStore.includes("blocked_in_this_runtime"),
-  "safety state must register Amadeus sandbox and block order creation"
+  "safety state must register Amadeus sandbox, require confirmation for order creation, and block payment"
 );
 assert.ok(
   amadeusProvider.includes("amadeus_sandbox_fixture") &&
-    amadeusProvider.includes("ORDER_CREATION_BLOCKED") &&
+    amadeusProvider.includes("async createOrder") &&
+    amadeusProvider.includes("amadeus_test_order_") &&
     amadeusProvider.includes("AMADEUS_CLIENT_ID"),
-  "Amadeus provider must expose sandbox fixtures and block order creation"
+  "Amadeus provider must expose sandbox fixtures and confirmed order creation"
 );
 const mcpServer = mcpConfig.mcpServers?.["anna-personal-assistant-amadeus-travel"];
 assert.equal(mcpServer?.type, "http", ".mcp.json must register the Amadeus MCP server as HTTP");

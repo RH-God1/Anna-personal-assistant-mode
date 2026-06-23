@@ -671,12 +671,9 @@ function travelBundle(runs) {
 }
 
 function dateFromText(text) {
-  const iso = text.match(/\b(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})日?\b/);
+  const iso = text.match(/\b(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})[日号]?\b/);
   if (!iso) return null;
-  const year = iso[1];
-  const month = iso[2].padStart(2, "0");
-  const day = iso[3].padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatIsoDateParts(iso[1], iso[2], iso[3]);
 }
 
 function adultsFromText(text) {
@@ -704,15 +701,36 @@ function tripTypeFromText(text) {
 }
 
 function returnDateFromText(text, departureDate) {
-  const explicit = text.match(/(?:返程|返回|回来|回程|return)\D{0,12}(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})日?/i);
+  const rangeReturnDate = dateRangeReturnDateFromText(text, departureDate);
+  if (rangeReturnDate) return rangeReturnDate;
+
+  const explicit = text.match(/(?:返程|返回|回来|回程|return)\D{0,12}(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})[日号]?/i);
   if (explicit) {
-    return `${explicit[1]}-${explicit[2].padStart(2, "0")}-${explicit[3].padStart(2, "0")}`;
+    return formatIsoDateParts(explicit[1], explicit[2], explicit[3]);
   }
   const days = text.match(/(?:往返|来回|返程|回程).*?(\d{1,2})\s*(?:天后|天|日后)/);
   if (!days) return null;
   const date = new Date(`${departureDate}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + Math.max(1, Math.min(180, Number(days[1]) || 1)));
   return date.toISOString().slice(0, 10);
+}
+
+function dateRangeReturnDateFromText(text, departureDate) {
+  if (!departureDate) return null;
+  const range = text.match(/\b(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})[日号]?\s*(?:到|至|~|～|—|–|->|→)\s*(?:(20\d{2})[-/.年])?(\d{1,2})[-/.月](\d{1,2})[日号]?\b/);
+  if (!range) return null;
+  const start = formatIsoDateParts(range[1], range[2], range[3]);
+  if (start !== departureDate) return null;
+  let endYear = range[4] || range[1];
+  let end = formatIsoDateParts(endYear, range[5], range[6]);
+  if (Date.parse(`${end}T00:00:00.000Z`) <= Date.parse(`${departureDate}T00:00:00.000Z`) && !range[4]) {
+    end = formatIsoDateParts(String(Number(endYear) + 1), range[5], range[6]);
+  }
+  return end;
+}
+
+function formatIsoDateParts(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function originFromText(text) {

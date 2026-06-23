@@ -266,7 +266,11 @@ test("local preview serves UI and assistant API", async (t) => {
 
   const confirmationPage = await fetch(`${base}/booking/confirm/${prepared.confirmationId}`);
   assert.equal(confirmationPage.status, 200);
-  assert.match(await confirmationPage.text(), /人工确认订单|个人助理模式/);
+  const confirmationPageHtml = await confirmationPage.text();
+  assert.match(confirmationPageHtml, /人工确认订单|个人助理模式/);
+  assert.match(confirmationPageHtml, /href="\/style\.css"/);
+  assert.match(confirmationPageHtml, /src="\/anna-tool-ids\.js"/);
+  assert.match(confirmationPageHtml, /src="\/app\.js"/);
 
   const confirmationResponse = await fetch(`${base}/api/booking/confirmation`, {
     method: "POST",
@@ -277,16 +281,33 @@ test("local preview serves UI and assistant API", async (t) => {
   const confirmation = await confirmationResponse.json();
   assert.equal(confirmation.id, prepared.confirmationId);
 
-  const bookingConfirmResponse = await fetch(`${base}/api/booking/confirm`, {
+  const missingConfirmationResponse = await fetch(`${base}/api/booking/confirm`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ confirmationId: prepared.confirmationId })
   });
+  assert.equal(missingConfirmationResponse.status, 200);
+  const missingConfirmation = await missingConfirmationResponse.json();
+  assert.equal(missingConfirmation.code, "USER_CONFIRMATION_REQUIRED");
+  assert.equal(missingConfirmation.confirmation.status, "PENDING");
+  assert.equal(missingConfirmation.order_results.length, 0);
+
+  const bookingConfirmResponse = await fetch(`${base}/api/booking/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmationId: prepared.confirmationId, userConfirmed: true })
+  });
   assert.equal(bookingConfirmResponse.status, 200);
   const bookingConfirm = await bookingConfirmResponse.json();
-  assert.equal(bookingConfirm.code, "USER_CHECKOUT_REQUIRED");
-  assert.equal(bookingConfirm.confirmation.provider_order_id, null);
-  assert.match(bookingConfirm.checkout_handoff_queue_id, /^confirm_/);
+  assert.equal(bookingConfirm.code, "ORDER_CREATED");
+  assert.match(bookingConfirm.confirmation.provider_order_id, /^duffel_test_order_/);
+  assert.equal(bookingConfirm.checkout_handoff_queue_id, null);
+  assert.equal(bookingConfirm.order_results[0].payment_required, true);
+  assert.match(bookingConfirm.order_results[0].order_reference, /^DUFFEL-TEST-/);
+  assert.equal(bookingConfirm.order_information.provider_order_id, bookingConfirm.confirmation.provider_order_id);
+  assert.equal(bookingConfirm.order_information.payment_collected_by_anna, false);
+  assert.equal(bookingConfirm.order_information.ticketing_completed_by_anna, false);
+  assert.equal(bookingConfirm.order_information.traveler_identity_collected_by_anna, false);
   assert.equal(bookingConfirm.payment_policy.payment_collected_by_anna, false);
 
   const crossOrigin = await fetch(`${base}/api/assistant`, {

@@ -26,7 +26,7 @@ export function createBookingStore({
     status() {
       return {
         booking_types: [...BOOKING_TYPES],
-        status_values: ["PENDING", "ORDER_CREATED", "EXPIRED", "CANCELLED"],
+        status_values: ["PENDING", "ORDER_CREATED", "USER_CHECKOUT_REQUIRED", "EXPIRED", "CANCELLED"],
         confirmation_ttl_minutes: Math.round(CONFIRMATION_TTL_MS / 60000),
         active_confirmations: confirmations.size,
         providers: providers.list(),
@@ -34,7 +34,7 @@ export function createBookingStore({
         database_table: "booking_confirmations",
         auto_payment: false,
         requires_human_confirmation: true,
-        order_creation: "blocked_in_this_runtime",
+        order_creation: "explicit_user_confirmation_required",
         confirmation_queue: safetyState?.status?.().confirmation_queue || null,
         sensitive_plaintext_storage: false
       };
@@ -131,6 +131,7 @@ export function createBookingStore({
         created_at: createdAt.toISOString(),
         provider_order_id: null,
         provider_booking_id: null,
+        order_information: null,
         confirmation_queue_id: null,
         payment_policy: paymentPolicy(),
         safety_checks: [
@@ -138,7 +139,7 @@ export function createBookingStore({
           "price_and_inventory_checked",
           "human_confirmation_required",
           "confirmation_queue_recorded",
-          "provider_order_creation_blocked",
+          "provider_order_creation_requires_explicit_confirmation",
           "no_payment_collected",
           "sensitive_documents_rejected"
         ]
@@ -220,38 +221,138 @@ export function createBookingStore({
           message: "price changed; user must review a new confirmation"
         };
       }
+      if (args.userConfirmed !== true) {
+        if (args.userConfirmed === false && safetyState && confirmation.confirmation_queue_id) {
+          safetyState.resolveConfirmation({
+            id: confirmation.confirmation_queue_id,
+            decision: "rejected",
+            actor: "anna_confirmation_page"
+          });
+        }
+        return {
+          status: "PENDING",
+          code: "USER_CONFIRMATION_REQUIRED",
+          confirmation: publicConfirmation(confirmation),
+          order_results: [],
+          checkout_handoff_queue_id: null,
+          message: "必须先在 Anna 确认页完成显式用户确认，才可以创建供应商订单记录或进入 checkout handoff。",
+          payment_policy: paymentPolicy()
+        };
+      }
       if (safetyState && confirmation.confirmation_queue_id) {
         safetyState.resolveConfirmation({
           id: confirmation.confirmation_queue_id,
-          decision: args.userConfirmed === false ? "rejected" : "approved",
+          decision: "approved",
           actor: "anna_confirmation_page"
         });
       }
-      const handoffQueueItem = safetyState?.requestConfirmation?.({
-        kind: "external_checkout_handoff",
-        permissionId: "booking.create_order",
-        riskLevel: "critical",
-        summary: `Supplier order creation remains blocked for ${confirmation.id}; user must complete any real checkout outside this runtime.`,
-        requiredHumanAction: "If the user wants to continue, open the supplier or official checkout under user control. Anna must not submit final order creation or payment.",
-        payloadRef: confirmation
-      }) || null;
-      confirmation.status = "USER_CHECKOUT_REQUIRED";
-      confirmation.provider_order_id = null;
-      confirmation.provider_booking_id = null;
-      confirmation.order_results = [];
-      confirmation.checkout_handoff_queue_id = handoffQueueItem?.id || null;
+      const wantsProviderOrder = args.createProviderOrder !== false && args.create_provider_order !== false;
+      if (!wantsProviderOrder) {
+        const handoffQueueItem = safetyState?.requestConfirmation?.({
+          kind: "external_checkout_handoff",
+          permissionId: "booking.create_order",
+          riskLevel: "critical",
+          summary: `Supplier order creation was deferred for ${confirmation.id}; user must complete checkout under user control.`,
+          requiredHumanAction: "Open the supplier or official checkout under user control. Anna must not handle payment.",
+          payloadRef: confirmation
+        }) || null;
+        confirmation.status = "USER_CHECKOUT_REQUIRED";
+        confirmation.provider_order_id = null;
+        confirmation.provider_booking_id = null;
+        confirmation.order_results = [];
+        confirmation.order_information = null;
+        confirmation.checkout_handoff_queue_id = handoffQueueItem?.id || null;
+        confirmation.updated_at = now().toISOString();
+        confirmations.set(confirmation.id, confirmation);
+        return {
+          status: "USER_CHECKOUT_REQUIRED",
+          code: "USER_CHECKOUT_REQUIRED",
+          confirmation: publicConfirmation(confirmation),
+          order_results: [],
+          checkout_handoff_queue_id: confirmation.checkout_handoff_queue_id,
+          message: "Anna 已完成价格/库存复核并记录人工确认；本次调用显式选择不创建供应商订单，后续 checkout 由用户本人控制。",
+          payment_policy: paymentPolicy()
+        };
+      }
+
+      safetyState?.assertAllowed?.("booking.create_order");
+      const orderResults = await createProviderOrders({ confirmation, providers });
+      confirmation.status = "ORDER_CREATED";
+      confirmation.provider_order_id = orderResults.map((item) => item.provider_order_id).filter(Boolean).join(",") || null;
+      confirmation.provider_booking_id = orderResults.map((item) => item.provider_booking_id).filter(Boolean).join(",") || null;
+      confirmation.order_results = orderResults;
+      confirmation.order_information = buildOrderInformation({ confirmation, orderResults });
+      confirmation.checkout_handoff_queue_id = null;
       confirmation.updated_at = now().toISOString();
       confirmations.set(confirmation.id, confirmation);
       return {
-        status: "USER_CHECKOUT_REQUIRED",
-        code: "USER_CHECKOUT_REQUIRED",
+        status: "ORDER_CREATED",
+        code: "ORDER_CREATED",
         confirmation: publicConfirmation(confirmation),
-        order_results: [],
-        checkout_handoff_queue_id: confirmation.checkout_handoff_queue_id,
-        message: "Anna 已完成价格/库存复核并记录人工确认，但此运行时不会创建供应商订单或付款。后续 checkout 必须由用户本人控制。",
+        order_results: orderResults,
+        order_information: confirmation.order_information,
+        checkout_handoff_queue_id: null,
+        message: "Anna 已完成价格/库存复核并在供应商侧创建订单记录；付款、证件、登录、验证码和最终出票仍必须由用户本人完成。",
         payment_policy: paymentPolicy()
       };
     }
+  };
+}
+
+async function createProviderOrders({ confirmation, providers }) {
+  const groups = new Map();
+  for (const item of confirmation.items) {
+    const key = item.provider;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  const results = [];
+  for (const [providerId, items] of groups.entries()) {
+    const provider = providers.get(providerId, items[0].type);
+    if (typeof provider.createOrder !== "function") {
+      throw new Error(`provider ${providerId} does not support order creation`);
+    }
+    const result = await provider.createOrder({
+      confirmationId: confirmation.id,
+      items,
+      confirmation: publicConfirmation(confirmation)
+    });
+    results.push({
+      provider: providerId,
+      provider_order_id: result.provider_order_id || null,
+      provider_booking_id: result.provider_booking_id || null,
+      order_reference: result.order_reference || result.provider_order_id || null,
+      order_url: result.order_url || result.provider_order_url || null,
+      order_type: result.order_type || "order",
+      order_status: result.order_status || result.status || "created",
+      next_required_action: result.next_required_action || "user_controlled_checkout_for_identity_payment_and_ticketing",
+      payment_required: result.payment_required !== false,
+      payment_collected_by_anna: false,
+      test_mode: result.test_mode === true,
+      raw_status: result.status || result.payment_status || null
+    });
+  }
+  return results;
+}
+
+function buildOrderInformation({ confirmation, orderResults }) {
+  const primary = orderResults[0] || {};
+  return {
+    confirmation_id: confirmation.id,
+    status: "ORDER_CREATED",
+    booking_type: confirmation.booking_type,
+    provider_order_id: confirmation.provider_order_id,
+    provider_booking_id: confirmation.provider_booking_id,
+    provider_order_url: primary.order_url || null,
+    provider_order_reference: primary.order_reference || primary.provider_order_id || null,
+    total_currency: confirmation.total_currency,
+    total_amount: confirmation.total_amount,
+    payment_required: orderResults.some((item) => item.payment_required !== false),
+    payment_collected_by_anna: false,
+    ticketing_completed_by_anna: false,
+    traveler_identity_collected_by_anna: false,
+    next_required_action: "user_must_open_order_or_checkout_to_enter_traveler_identity_payment_and_final_ticketing",
+    order_results: orderResults
   };
 }
 
@@ -409,6 +510,7 @@ function publicConfirmation(confirmation) {
     created_at: confirmation.created_at,
     provider_order_id: confirmation.provider_order_id,
     provider_booking_id: confirmation.provider_booking_id,
+    order_information: confirmation.order_information || null,
     confirmation_queue_id: confirmation.confirmation_queue_id,
     checkout_handoff_queue_id: confirmation.checkout_handoff_queue_id || null,
     order_results: confirmation.order_results || [],
@@ -535,8 +637,9 @@ function paymentPolicy() {
     auto_payment: false,
     payment_collected_by_anna: false,
     card_storage: "forbidden",
-    order_creation_by_anna: false,
-    message: "Anna 只生成本地预确认和人工交接记录，不创建供应商订单、不自动付款、不保存银行卡。"
+    order_creation_by_anna: true,
+    requires_explicit_user_confirmation: true,
+    message: "Anna 可在用户逐项确认后创建供应商订单记录；不会自动付款，不保存银行卡、CVV、证件号或验证码。"
   };
 }
 

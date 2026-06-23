@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createLocalAnnaHost, safeFile } from "../src/host.js";
-import { assertNoSensitivePayload } from "../src/privacy.js";
+import { assertNoSensitivePayload, assertResultHasNoSecrets } from "../src/privacy.js";
 
 const runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), "anna-host-lab-test-"));
 const host = createLocalAnnaHost({ runtimeDir });
@@ -554,6 +554,83 @@ test("allows boolean credential configuration metadata without exposing secrets"
   assert.throws(
     () => assertNoSensitivePayload({ access_token: "not-a-real-token" }),
     /Sensitive field/
+  );
+});
+
+test("allows redacted booking confirmation metadata but rejects raw traveler data", () => {
+  assert.doesNotThrow(() =>
+    assertResultHasNoSecrets({
+      success: true,
+      data: {
+        confirmation: {
+          traveler_snapshot: {
+            count: 1,
+            travelers: [{
+              label: "旅客/住客 1",
+              type: "adult",
+              display_name: "王**",
+              document_status: "not_collected_by_anna",
+              payment_status: "not_collected_by_anna"
+            }],
+            sensitive_fields_saved: false,
+            plaintext_documents_saved: false,
+            plaintext_payment_saved: false
+          },
+          payment_policy: {
+            auto_payment: false,
+            payment_collected_by_anna: false,
+            card_storage: "forbidden",
+            order_creation_by_anna: true
+          }
+        }
+      }
+    })
+  );
+
+  assert.throws(
+    () => assertResultHasNoSecrets({
+      data: {
+        confirmation: {
+          traveler_snapshot: {
+            count: 1,
+            travelers: [{
+              label: "旅客/住客 1",
+              type: "adult",
+              display_name: "王小明",
+              document_status: "not_collected_by_anna",
+              payment_status: "not_collected_by_anna"
+            }],
+            sensitive_fields_saved: false,
+            plaintext_documents_saved: false,
+            plaintext_payment_saved: false
+          }
+        }
+      }
+    }),
+    /privacy filter/
+  );
+
+  assert.throws(
+    () => assertResultHasNoSecrets({
+      data: {
+        confirmation: {
+          traveler_snapshot: {
+            count: 1,
+            travelers: [{
+              label: "旅客/住客 1",
+              type: "adult",
+              display_name: "王**",
+              document_status: "passport_collected",
+              payment_status: "not_collected_by_anna"
+            }],
+            sensitive_fields_saved: false,
+            plaintext_documents_saved: false,
+            plaintext_payment_saved: false
+          }
+        }
+      }
+    }),
+    /privacy filter/
   );
 });
 

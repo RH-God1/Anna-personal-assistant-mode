@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS booking_confirmations (
   traveler_snapshot JSONB NOT NULL,
   total_currency TEXT NOT NULL,
   total_amount NUMERIC(12, 2) NOT NULL,
-  status TEXT NOT NULL CHECK (status IN ('PENDING', 'ORDER_CREATED', 'EXPIRED', 'CANCELLED')),
+  status TEXT NOT NULL CHECK (status IN ('PENDING', 'ORDER_CREATED', 'USER_CHECKOUT_REQUIRED', 'EXPIRED', 'CANCELLED')),
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ,

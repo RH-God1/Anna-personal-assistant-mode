@@ -29,6 +29,8 @@ export function createDuffelProvider({ now = () => new Date() } = {}) {
       return {
         ...config,
         supports: config.stays_enabled ? ["flight", "hotel"] : ["flight"],
+        order_creation: "explicit_user_confirmation_required",
+        payment: "blocked_in_this_runtime",
         only_travel_supplier: true
       };
     },
@@ -99,12 +101,17 @@ export function createDuffelProvider({ now = () => new Date() } = {}) {
     },
 
     async createOrder({ confirmationId, items }) {
+      const orderId = `duffel_test_order_${confirmationId.slice(-10)}`;
       return {
         provider: PROVIDER,
-        provider_order_id: `duffel_test_order_${confirmationId.slice(-10)}`,
+        provider_order_id: orderId,
         provider_booking_id: `duffel_test_booking_${items.length}`,
+        order_reference: `DUFFEL-TEST-${confirmationId.slice(-8).toUpperCase()}`,
+        order_url: config.test_mode ? null : `${config.base_url}/air/orders/${encodeURIComponent(orderId)}`,
+        order_status: "created",
         test_mode: config.test_mode,
         order_type: "hold",
+        next_required_action: "user_controlled_duffel_checkout_for_traveler_identity_payment_and_ticketing",
         payment_required: true,
         payment_collected_by_anna: false
       };

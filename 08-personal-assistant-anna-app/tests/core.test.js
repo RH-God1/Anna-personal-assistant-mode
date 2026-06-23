@@ -353,29 +353,87 @@ test("booking prepare supports generic flight_hotel confirmations without paymen
   assert.match(prepared.confirmation.confirmation_queue_id, /^confirm_/);
   assert.equal(prepared.confirmation.traveler_snapshot.plaintext_documents_saved, false);
   assert.equal(prepared.confirmation.payment_policy.auto_payment, false);
-  assert.equal(prepared.confirmation.payment_policy.order_creation_by_anna, false);
+  assert.equal(prepared.confirmation.payment_policy.order_creation_by_anna, true);
   assert.match(prepared.confirmation.traveler_snapshot.travelers[0].display_name, /^王/);
 
   const loaded = service.bookingGetConfirmation({ confirmationId: prepared.confirmationId });
   assert.equal(loaded.id, prepared.confirmationId);
   assert.equal(loaded.flight_offer_id, comparison.recommendation.items.find((item) => item.type === "flight").offerId);
 
-  const confirmed = await service.bookingConfirm({ confirmationId: prepared.confirmationId });
-  assert.equal(confirmed.code, "USER_CHECKOUT_REQUIRED");
-  assert.equal(confirmed.confirmation.status, "USER_CHECKOUT_REQUIRED");
-  assert.equal(confirmed.confirmation.provider_order_id, null);
-  assert.match(confirmed.checkout_handoff_queue_id, /^confirm_/);
+  const confirmed = await service.bookingConfirm({
+    confirmationId: prepared.confirmationId,
+    userConfirmed: true
+  });
+  assert.equal(confirmed.code, "ORDER_CREATED");
+  assert.equal(confirmed.confirmation.status, "ORDER_CREATED");
+  assert.match(confirmed.confirmation.provider_order_id, /^duffel_test_order_/);
+  assert.match(confirmed.confirmation.provider_booking_id, /^duffel_test_booking_/);
+  assert.equal(confirmed.checkout_handoff_queue_id, null);
+  assert.equal(confirmed.order_results[0].payment_required, true);
+  assert.equal(confirmed.order_results[0].order_status, "created");
+  assert.equal(confirmed.order_results[0].payment_collected_by_anna, false);
+  assert.match(confirmed.order_results[0].order_reference, /^DUFFEL-TEST-/);
+  assert.equal(confirmed.order_information.status, "ORDER_CREATED");
+  assert.equal(confirmed.order_information.provider_order_id, confirmed.confirmation.provider_order_id);
+  assert.equal(confirmed.order_information.payment_collected_by_anna, false);
+  assert.equal(confirmed.order_information.ticketing_completed_by_anna, false);
+  assert.equal(confirmed.order_information.traveler_identity_collected_by_anna, false);
+  assert.match(confirmed.order_information.next_required_action, /user_must_open_order_or_checkout/);
   assert.equal(confirmed.payment_policy.payment_collected_by_anna, false);
 });
 
-test("permission registry and confirmation queue block supplier order creation", async () => {
+test("booking confirm requires explicit user confirmation before creating supplier orders", async () => {
+  const service = createAssistantService({
+    now: () => new Date("2026-06-20T02:30:00.000Z")
+  });
+  const flight = await service.flightSearch({
+    provider: "duffel",
+    origin: "SHA",
+    destination: "NRT",
+    departureDate: "2026-08-12",
+    passengers: { adults: 1 }
+  });
+  const prepared = await service.bookingPrepare({
+    bookingType: "flight",
+    items: [{
+      type: "flight",
+      provider: "duffel",
+      offerId: flight.offers[0].id,
+      criteria: {
+        origin: "SHA",
+        destination: "NRT",
+        departureDate: "2026-08-12",
+        passengers: { adults: 1 }
+      }
+    }]
+  });
+
+  const unconfirmed = await service.bookingConfirm({ confirmationId: prepared.confirmationId });
+  assert.equal(unconfirmed.code, "USER_CONFIRMATION_REQUIRED");
+  assert.equal(unconfirmed.status, "PENDING");
+  assert.equal(unconfirmed.confirmation.status, "PENDING");
+  assert.equal(unconfirmed.confirmation.provider_order_id, null);
+  assert.equal(unconfirmed.order_results.length, 0);
+
+  const confirmed = await service.bookingConfirm({
+    confirmationId: prepared.confirmationId,
+    userConfirmed: true
+  });
+  assert.equal(confirmed.code, "ORDER_CREATED");
+  assert.match(confirmed.confirmation.provider_order_id, /^duffel_test_order_/);
+  assert.equal(confirmed.order_information.provider_order_id, confirmed.confirmation.provider_order_id);
+  assert.equal(confirmed.order_information.order_results[0].payment_collected_by_anna, false);
+});
+
+test("permission registry allows confirmed supplier order creation but payment stays blocked", async () => {
   const service = createAssistantService({
     now: () => new Date("2026-06-20T03:00:00.000Z")
   });
   const permissions = service.permissionRegistry();
   assert.ok(permissions.some((item) => item.id === "healthkit.read_snapshot"));
   assert.ok(permissions.some((item) => item.id === "travel.search.amadeus_sandbox"));
-  assert.ok(permissions.some((item) => item.id === "booking.create_order" && item.status === "blocked_in_this_runtime"));
+  assert.ok(permissions.some((item) => item.id === "booking.create_order" && item.status === "requires_user_confirmation"));
+  assert.ok(permissions.some((item) => item.id === "payment.confirm" && item.status === "blocked_in_this_runtime"));
 
   const flight = await service.flightSearch({
     provider: "amadeus",
@@ -407,7 +465,8 @@ test("permission registry and confirmation queue block supplier order creation",
 
   const confirmed = await service.bookingConfirm({
     confirmationId: prepared.confirmationId,
-    userConfirmed: true
+    userConfirmed: true,
+    createProviderOrder: false
   });
   assert.equal(confirmed.code, "USER_CHECKOUT_REQUIRED");
   assert.equal(confirmed.order_results.length, 0);
@@ -632,6 +691,22 @@ test("assistant can infer Duffel booking fields from user requests without openi
   assert.equal(flight.context.booking.opens_external_browser, false);
   assert.match(flight.response.answer, /Duffel|booking_prepare|外部浏览器/);
   assert.doesNotMatch(JSON.stringify(flight.context.booking), /expedia|booking\.com|trip\.com|Flights-Search/i);
+
+  const dateRangeFlight = await service.assist({
+    message: "帮我订购一张从上海到东京，2026年7月2日到7月10日往返的机票，1位成人，经济舱。请先帮我查找并推荐需要订购哪一张机票。"
+  });
+  assert.equal(dateRangeFlight.route.intent, "travel");
+  assert.equal(dateRangeFlight.context.travel, null);
+  assert.equal(dateRangeFlight.context.booking.mode, "duffel_booking_compare");
+  assert.equal(dateRangeFlight.context.booking.input.bookingType, "flight");
+  assert.equal(dateRangeFlight.context.booking.input.flight.origin, "SHA");
+  assert.equal(dateRangeFlight.context.booking.input.flight.destination, "NRT");
+  assert.equal(dateRangeFlight.context.booking.input.flight.departureDate, "2026-07-02");
+  assert.equal(dateRangeFlight.context.booking.input.flight.returnDate, "2026-07-10");
+  assert.equal(dateRangeFlight.context.booking.input.flight.cabinClass, "economy");
+  assert.equal(dateRangeFlight.context.booking.input.flight.passengers.adults, 1);
+  assert.equal(dateRangeFlight.context.booking.opens_external_browser, false);
+  assert.doesNotMatch(JSON.stringify(dateRangeFlight.context.booking), /expedia|booking\.com|trip\.com|Flights-Search/i);
 
   const hotel = await service.assist({
     message: "帮我订东京酒店，2026-08-12，住2晚，预算1000元，2人，用户自己确认和付款"

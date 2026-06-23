@@ -37,7 +37,9 @@ function walk(value, visit, path = "args", seen = new Set()) {
 
 export function assertNoSensitivePayload(value) {
   walk(value, (key, nested, currentPath) => {
-    if (sensitiveKeyPattern.test(key) && !isSafeSecretMetadata(key, nested)) {
+    if (sensitiveKeyPattern.test(key) &&
+        !isSafeSecretMetadata(key, nested) &&
+        !isSafeBookingMetadata(key, nested, currentPath)) {
       throw new PolicyError(
         "sensitive_field_blocked",
         `Sensitive field is not accepted by the local host: ${currentPath}`
@@ -55,6 +57,61 @@ export function assertNoSensitivePayload(value) {
 
 function isSafeSecretMetadata(key, value) {
   return typeof value === "boolean" && /(?:^|[_-])configured$/i.test(key);
+}
+
+function isSafeBookingMetadata(key, value, currentPath) {
+  if (key === "traveler_snapshot") return isSafeTravelerSnapshot(value);
+  if (currentPath.includes(".traveler_snapshot.")) {
+    if (key === "document_status" || key === "payment_status") {
+      return value === "not_collected_by_anna";
+    }
+    if (key === "plaintext_documents_saved" ||
+        key === "plaintext_payment_saved" ||
+        key === "sensitive_fields_saved") {
+      return value === false;
+    }
+  }
+  if (key === "payment_policy") return isSafePaymentPolicy(value);
+  if (currentPath.includes(".payment_policy.") && key === "card_storage") {
+    return value === "forbidden";
+  }
+  return false;
+}
+
+function isSafeTravelerSnapshot(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  if (value.sensitive_fields_saved !== false ||
+      value.plaintext_documents_saved !== false ||
+      value.plaintext_payment_saved !== false) {
+    return false;
+  }
+  if (!Number.isInteger(value.count) || value.count < 1 || value.count > 9) {
+    return false;
+  }
+  if (!Array.isArray(value.travelers) || value.travelers.length !== value.count) {
+    return false;
+  }
+  return value.travelers.every((traveler, index) =>
+    traveler &&
+    typeof traveler === "object" &&
+    traveler.label === `\u65c5\u5ba2/\u4f4f\u5ba2 ${index + 1}` &&
+    typeof traveler.type === "string" &&
+    traveler.type.length <= 24 &&
+    typeof traveler.display_name === "string" &&
+    (traveler.display_name === "\u672a\u586b\u5199" || traveler.display_name.includes("*")) &&
+    traveler.document_status === "not_collected_by_anna" &&
+    traveler.payment_status === "not_collected_by_anna"
+  );
+}
+
+function isSafePaymentPolicy(value) {
+  return value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    value.auto_payment === false &&
+    value.payment_collected_by_anna === false &&
+    value.card_storage === "forbidden" &&
+    typeof value.order_creation_by_anna === "boolean";
 }
 
 export function assertResultHasNoSecrets(value) {
