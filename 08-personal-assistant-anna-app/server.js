@@ -237,11 +237,18 @@ function serveStatic(pathname, response) {
 function safeStaticFile(pathname) {
   let relative;
   try {
-    relative = pathname === "/matrix"
-      ? "matrix.html"
-      : pathname === "/" || pathname.startsWith("/booking/confirm/")
-      ? "index.html"
-      : decodeURIComponent(pathname.slice(1));
+    if (pathname === "/matrix") {
+      relative = "matrix.html";
+    } else if (pathname === "/") {
+      relative = "index.html";
+    } else if (pathname.startsWith("/booking/confirm/")) {
+      const nestedAsset = decodeURIComponent(pathname.slice("/booking/confirm/".length));
+      relative = ["app.js", "anna-tool-ids.js", "icon.svg", "style.css"].includes(nestedAsset)
+        ? nestedAsset
+        : "index.html";
+    } else {
+      relative = decodeURIComponent(pathname.slice(1));
+    }
   } catch {
     return null;
   }

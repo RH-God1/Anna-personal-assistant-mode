@@ -268,9 +268,16 @@ test("local preview serves UI and assistant API", async (t) => {
   assert.equal(confirmationPage.status, 200);
   const confirmationPageHtml = await confirmationPage.text();
   assert.match(confirmationPageHtml, /人工确认订单|个人助理模式/);
-  assert.match(confirmationPageHtml, /href="\/style\.css"/);
-  assert.match(confirmationPageHtml, /src="\/anna-tool-ids\.js"/);
-  assert.match(confirmationPageHtml, /src="\/app\.js"/);
+  assert.match(confirmationPageHtml, /href="\.\/style\.css"/);
+  assert.match(confirmationPageHtml, /src="\.\/anna-tool-ids\.js"/);
+  assert.match(confirmationPageHtml, /src="\.\/app\.js"/);
+
+  const nestedStyle = await fetch(`${base}/booking/confirm/style.css`);
+  assert.equal(nestedStyle.status, 200);
+  assert.match(nestedStyle.headers.get("content-type") || "", /text\/css/);
+  const nestedScript = await fetch(`${base}/booking/confirm/app.js`);
+  assert.equal(nestedScript.status, 200);
+  assert.match(nestedScript.headers.get("content-type") || "", /javascript/);
 
   const confirmationResponse = await fetch(`${base}/api/booking/confirmation`, {
     method: "POST",

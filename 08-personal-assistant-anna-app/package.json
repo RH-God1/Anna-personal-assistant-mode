@@ -1,6 +1,6 @@
 {
   "name": "anna-personal-assistant-mode",
-  "version": "0.1.42",
+  "version": "0.1.43",
   "private": true,
   "type": "module",
   "description": "Privacy-aware multimodal personal assistant experiment for Anna.",
