@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: anna-agent-server
+    runtime: python
+    rootDir: services/agent-server/python_agent
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.0

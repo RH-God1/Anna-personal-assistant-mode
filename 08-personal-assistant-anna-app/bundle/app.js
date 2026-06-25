@@ -869,7 +869,11 @@ function confirmationIdFromPath() {
   const match = window.location.pathname.match(/^\/booking\/confirm\/([^/]+)$/);
   if (match) return decodeURIComponent(match[1]);
   const hashMatch = window.location.hash.match(/^#\/booking\/confirm\/([^/]+)$/);
-  return hashMatch ? decodeURIComponent(hashMatch[1]) : null;
+  if (hashMatch) return decodeURIComponent(hashMatch[1]);
+  const params = new URLSearchParams(window.location.search);
+  const wid = params.get('wid') || params.get('window_id') || params.get('confirmation_id');
+  if (wid) return wid;
+  return null;
 }
 
 async function renderBookingConfirmationPage(confirmationId) {
@@ -880,7 +884,7 @@ async function renderBookingConfirmationPage(confirmationId) {
   page.className = "confirmation-page";
   const header = document.createElement("header");
   header.className = "confirmation-header";
-  header.innerHTML = "<span>ANNA BOOKING CONFIRMATION</span><h1>人工确认订单</h1><p>创建订单前请逐项核对。Anna 不自动付款，不保存证件号、护照号或银行卡。</p>";
+  header.innerHTML = "<span>ANNA BOOKING CONFIRMATION</span><h1>人工确认订单</h1><p>请核对订单快照，并只填写非敏感接管信息。Anna 不自动付款，不保存证件号、护照号、手机号、邮箱或银行卡。</p>";
   const body = document.createElement("section");
   body.className = "confirmation-body";
   body.textContent = "正在读取确认记录...";
@@ -888,7 +892,9 @@ async function renderBookingConfirmationPage(confirmationId) {
   shell.append(page);
   try {
     const confirmation = await callAction("booking_get_confirmation", { confirmationId });
-    body.replaceChildren(...confirmationSections(confirmation), confirmationChecklist(confirmation));
+    const sections = confirmationSections(confirmation);
+    if (confirmation.order_information) sections.push(orderInformationCard(confirmation.order_information, confirmation.id));
+    body.replaceChildren(...sections, confirmationChecklist(confirmation));
   } catch (error) {
     body.textContent = `确认记录读取失败：${error.message || error}`;
   }
@@ -936,6 +942,93 @@ function confirmationSections(confirmation) {
   return sections;
 }
 
+function orderInformationCard(orderInformation, confirmationId) {
+  const created = orderInformation.status === "ORDER_CREATED" || orderInformation.provider_order_created_by_anna;
+  const card = confirmationCard(created ? "订单记录" : "订单交接信息", [
+    ["订单状态", orderInformation.status],
+    ["本地/供应商订单号", orderInformation.provider_order_id || orderInformation.local_order_id || "未生成"],
+    ["供应商预订号", orderInformation.provider_booking_id || "待用户完成 checkout 后确认"],
+    ["订单类型", orderInformation.provider_order_type || "handoff"],
+    ["测试模式", orderInformation.provider_order_test_mode === false ? "否" : "是"],
+    ["付款", orderInformation.payment_collected_by_anna ? "异常：Anna 已付款" : "用户本人付款"],
+    ["出票/入住确认", orderInformation.ticketing_completed_by_anna ? "异常：Anna 已完成" : "用户本人完成"],
+    ["证件资料", orderInformation.traveler_identity_collected_by_anna ? "异常：Anna 已收集" : "用户本人填写"],
+    ["下一步", orderInformation.next_required_action],
+    ["继续填写/付款入口", orderInformation.checkout_handoff_url || "未生成"]
+  ]);
+  if (orderInformation.checkout_handoff_url) {
+    const link = document.createElement("a");
+    link.className = "confirmation-handoff-link";
+    link.href = orderInformation.checkout_handoff_url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "打开用户接管页面";
+    card.append(link);
+    const actions = document.createElement("div");
+    actions.className = "confirmation-actions";
+    const openButton = document.createElement("button");
+    openButton.type = "button";
+    openButton.className = "ghost-button";
+    openButton.textContent = "让本机后端打开";
+    const paidButton = document.createElement("button");
+    paidButton.type = "button";
+    paidButton.className = "ghost-button";
+    paidButton.textContent = "我已完成付款";
+    const status = document.createElement("p");
+    status.className = "confirmation-result";
+    openButton.addEventListener("click", async () => {
+      openButton.disabled = true;
+      status.textContent = "正在请求本机后端打开 checkout...";
+      try {
+        const response = await callAction("booking_open_checkout", {
+          confirmationId,
+          userConfirmedOpen: true
+        });
+        status.textContent = response.message || `打开状态：${response.code || response.status}`;
+      } catch (error) {
+        status.textContent = `打开失败：${error.message || error}`;
+        openButton.disabled = false;
+      }
+    });
+    paidButton.addEventListener("click", async () => {
+      paidButton.disabled = true;
+      status.textContent = "正在记录外站付款状态...";
+      try {
+        const response = await callAction("booking_report_payment", {
+          confirmationId,
+          userReportedPaid: true
+        });
+        status.textContent = response.message || "已记录付款状态。";
+        card.append(postPaymentPlanCard(response.post_payment_plan));
+      } catch (error) {
+        status.textContent = `付款状态记录失败：${error.message || error}`;
+        paidButton.disabled = false;
+      }
+    });
+    actions.append(openButton, paidButton);
+    card.append(actions, status);
+  }
+  return card;
+}
+
+function postPaymentPlanCard(plan) {
+  const card = confirmationCard("付款后规划", [
+    ["状态", plan?.status || "READY_FOR_TRIP_PLANNING"],
+    ["依据", plan?.basis || "user_reported_payment_completed"],
+    ["下一步", (plan?.next_actions || []).join("；") || "整理确认号并生成出行提醒"]
+  ]);
+  const list = document.createElement("ul");
+  for (const item of plan?.items || []) {
+    const li = document.createElement("li");
+    li.textContent = item.type === "flight"
+      ? `航班：${item.route || ""} ${item.departure_time || ""}`
+      : `酒店：${item.hotel_name || ""} ${item.checkin_date || ""} -> ${item.checkout_date || ""}`;
+    list.append(li);
+  }
+  card.append(list);
+  return card;
+}
+
 function confirmationCard(title, rows) {
   const card = document.createElement("article");
   card.className = "confirmation-card";
@@ -958,24 +1051,27 @@ function confirmationChecklist(confirmation) {
   panel.className = "confirmation-checklist";
   const title = document.createElement("h2");
   title.textContent = "人工确认";
+  const completion = confirmationUserCompletion(confirmation);
   const checks = [
     "我已核对航班/酒店日期、人数、价格和库存提示",
     "我已阅读行李信息、退改签规则和酒店取消政策",
-    "我理解 Anna 不会创建供应商订单、自动付款或保存银行卡信息",
+    "我理解 Anna 只会创建 sandbox/test 订单记录，不会自动付款、出票或保存银行卡信息",
     "如果价格变化或库存不可用，本次确认必须重新开始"
   ];
   const button = document.createElement("button");
   button.className = "solid-button";
   button.type = "button";
-  button.textContent = "确认并进入人工交接";
+  button.textContent = "确认并创建订单记录";
   button.disabled = true;
+  function updateButtonState() {
+    button.disabled = !boxes.every((item) => item.querySelector("input").checked) ||
+      !completion.ready();
+  }
   const boxes = checks.map((copy) => {
     const label = document.createElement("label");
     const input = document.createElement("input");
     input.type = "checkbox";
-    input.addEventListener("change", () => {
-      button.disabled = !boxes.every((item) => item.querySelector("input").checked);
-    });
+    input.addEventListener("change", updateButtonState);
     const span = document.createElement("span");
     span.textContent = copy;
     label.append(input, span);
@@ -989,10 +1085,17 @@ function confirmationChecklist(confirmation) {
     try {
       const response = await callAction("booking_confirm", {
         confirmationId: confirmation.id,
-        userConfirmed: true
+        userConfirmed: true,
+        userCompletion: completion.value()
       });
-      if (response.code === "USER_CHECKOUT_REQUIRED") {
+      if (response.code === "ORDER_CREATED") {
+        result.textContent = response.message || "已创建 sandbox/test 订单记录；后续 checkout 必须由用户本人控制。";
+        panel.querySelector(".confirmation-card")?.remove();
+        panel.append(orderInformationCard(response.order_information || response.confirmation?.order_information || {}, confirmation.id));
+      } else if (response.code === "USER_CHECKOUT_REQUIRED") {
         result.textContent = response.message || "已完成复核并记录人工确认；后续 checkout 必须由用户本人控制。";
+        panel.querySelector(".confirmation-card")?.remove();
+        panel.append(orderInformationCard(response.order_information || response.confirmation?.order_information || {}, confirmation.id));
       } else if (response.code === "PRICE_CHANGED") {
         result.textContent = "价格已变化：请返回搜索并重新生成确认页。";
       } else if (response.code === "UNAVAILABLE") {
@@ -1005,8 +1108,76 @@ function confirmationChecklist(confirmation) {
       button.disabled = false;
     }
   });
-  panel.append(title, ...boxes, button, result);
+  completion.onChange(updateButtonState);
+  panel.append(title, completion.section, ...boxes, button, result);
   return panel;
+}
+
+function confirmationUserCompletion(confirmation) {
+  const section = document.createElement("section");
+  section.className = "confirmation-user-completion";
+  const heading = document.createElement("b");
+  heading.textContent = "用户填写与接管";
+  const note = document.createElement("p");
+  note.textContent = "这里只填写展示名和接管方式。真实姓名、证件、电话、邮箱、登录、验证码和付款信息请只在供应商或官方页面由你本人填写。";
+  const fields = document.createElement("div");
+  fields.className = "completion-fields";
+  const travelers = confirmation.traveler_snapshot?.travelers || [];
+  const displayInputs = travelers.map((traveler, index) => {
+    const label = document.createElement("label");
+    label.textContent = traveler.label || `旅客/住客 ${index + 1}`;
+    const input = document.createElement("input");
+    input.dataset.role = "traveler-display-name";
+    input.maxLength = 40;
+    input.placeholder = "展示名，例如 Wang / 旅客1";
+    input.value = traveler.display_name && traveler.display_name !== "未填写" ? traveler.display_name : "";
+    label.append(input);
+    fields.append(label);
+    return input;
+  });
+  const handoffLabel = document.createElement("label");
+  handoffLabel.textContent = "后续资料填写方式";
+  const handoff = document.createElement("select");
+  handoff.dataset.role = "handoff-choice";
+  for (const [value, label] of [
+    ["supplier_checkout", "打开供应商/官方页面后由我填写"],
+    ["saved_supplier_profile", "使用我在供应商账户里已保存的乘客资料"],
+    ["manual_follow_up", "先记录订单交接信息，稍后我自己处理"]
+  ]) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    handoff.append(option);
+  }
+  handoffLabel.append(handoff);
+  fields.append(handoffLabel);
+  const responsible = document.createElement("label");
+  responsible.className = "checkout-responsible-row";
+  const responsibleInput = document.createElement("input");
+  responsibleInput.type = "checkbox";
+  responsibleInput.dataset.role = "checkout-responsible";
+  const responsibleText = document.createElement("span");
+  responsibleText.textContent = "我确认证件、联系方式、验证码、登录和付款都由我本人在外站完成。";
+  responsible.append(responsibleInput, responsibleText);
+  section.append(heading, note, fields, responsible);
+  return {
+    section,
+    ready() {
+      return responsibleInput.checked;
+    },
+    onChange(handler) {
+      responsibleInput.addEventListener("change", handler);
+      handoff.addEventListener("change", handler);
+      for (const input of displayInputs) input.addEventListener("input", handler);
+    },
+    value() {
+      return {
+        travelerDisplayNames: displayInputs.map((input) => input.value.trim()).filter(Boolean),
+        handoffChoice: handoff.value,
+        checkoutResponsible: responsibleInput.checked
+      };
+    }
+  };
 }
 
 function formatDateTime(value) {
@@ -1131,6 +1302,7 @@ async function runAssistant(event) {
   setBusy("正在选择能力", "分析文本、附件与可用工具");
   try {
     const result = await callAction("assist", {
+      user_key: state.userKey,
       message,
       attachments: state.attachments.map(({ id, name, type, size }) => ({ id, name, type, size })),
       preferred_model: els.modelSelect.value || "anna-auto",
@@ -1160,6 +1332,25 @@ async function runAssistant(event) {
       syncBookingFormFromPayload(result.context.booking.input);
       renderBookingComparison(comparison);
       els.bookingPrepareButton.disabled = !comparison.recommendation;
+    }
+    if (result.context?.booking?.mode === "duffel_booking_prepared") {
+      const prepared = result.context.booking.prepared || {};
+      const confirmationId = prepared.confirmationId || prepared.confirmation?.id;
+      if (confirmationId) {
+        renderResponse(result.response);
+        renderLearningFromResult(result);
+        setIdle("确认页已生成", "正在打开可填写的订单详情页");
+        window.history.pushState(
+          null,
+          "",
+          `${window.location.pathname}${window.location.search}#/booking/confirm/${encodeURIComponent(confirmationId)}`
+        );
+        await renderBookingConfirmationPage(confirmationId);
+        els.messageInput.value = "";
+        state.attachments = [];
+        renderAttachments();
+        return;
+      }
     }
     renderResponse(result.response);
     renderLearningFromResult(result);
@@ -1466,6 +1657,8 @@ async function callAction(action, args = {}) {
     booking_prepare: ["/api/booking/prepare", "POST"],
     booking_get_confirmation: ["/api/booking/confirmation", "POST"],
     booking_confirm: ["/api/booking/confirm", "POST"],
+    booking_open_checkout: ["/api/booking/open-checkout", "POST"],
+    booking_report_payment: ["/api/booking/report-payment", "POST"],
     assist: ["/api/assistant", "POST"]
   };
   const [url, method] = endpoints[action];
