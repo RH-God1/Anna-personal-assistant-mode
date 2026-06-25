@@ -61,6 +61,25 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   state.userKey = localUserKey();
   state.runtime = await connectAnna();
+
+  // DIAGNOSTIC: log runtime properties to discover payload API
+  if (state.runtime) {
+    const runtimeKeys = Object.keys(state.runtime);
+    console.log('[ANNA DIAGNOSTIC] runtime keys:', JSON.stringify(runtimeKeys));
+    if (state.runtime.window) {
+      console.log('[ANNA DIAGNOSTIC] runtime.window:', JSON.stringify(Object.keys(state.runtime.window)));
+    }
+    if (state.runtime.context) {
+      console.log('[ANNA DIAGNOSTIC] runtime.context:', JSON.stringify(state.runtime.context));
+    }
+    if (state.runtime.view) {
+      console.log('[ANNA DIAGNOSTIC] runtime.view:', JSON.stringify(state.runtime.view));
+    }
+    if (state.runtime.payload) {
+      console.log('[ANNA DIAGNOSTIC] runtime.payload:', JSON.stringify(state.runtime.payload));
+    }
+  }
+
   const confirmationId = confirmationIdFromPath();
   if (confirmationId) {
     await renderBookingConfirmationPage(confirmationId);

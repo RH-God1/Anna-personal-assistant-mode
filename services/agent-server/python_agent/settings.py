@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     agent_send_email_enabled: bool = False
     agent_audit_log_enabled: bool = True
     agent_audit_db_path: str = "./audit_logs.sqlite"
+    personal_assistant_api_base_url: str = Field(
+        default="http://127.0.0.1:8808",
+        validation_alias="ANNA_PERSONAL_ASSISTANT_API_BASE_URL"
+    )
     openai_api_key: str | None = Field(default=None, validation_alias="OPENAI_API_KEY")
 
     @property

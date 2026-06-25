@@ -641,6 +641,51 @@ button { color: inherit; }
   display: grid;
   gap: 10px;
 }
+.confirmation-user-completion {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px dashed rgba(113, 96, 238, 0.22);
+  border-radius: 14px;
+  background: rgba(246, 248, 255, 0.74);
+}
+.confirmation-user-completion b {
+  color: var(--violet-deep);
+  font-size: 13px;
+}
+.confirmation-user-completion p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.completion-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.completion-fields label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+.completion-fields input,
+.completion-fields select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.88);
+  color: var(--ink);
+}
+.checkout-responsible-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
 .confirmation-checklist label {
   display: flex;
   align-items: flex-start;
@@ -652,6 +697,36 @@ button { color: inherit; }
 .confirmation-checklist input { margin-top: 2px; accent-color: var(--violet); }
 .confirmation-checklist button { justify-self: start; }
 .confirmation-result { margin: 0; color: var(--violet-deep); font-size: 13px; font-weight: 800; }
+.confirmation-handoff-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 38px;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: white;
+  background: var(--violet);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.confirmation-handoff-link:hover {
+  background: var(--violet-deep);
+  transform: translateY(-1px);
+}
+.confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.confirmation-actions .ghost-button {
+  min-height: 36px;
+  border-radius: 12px;
+  font-size: 12px;
+}
 
 .capability-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin: 24px 0 17px; }
 .capability-strip span {
@@ -840,6 +915,7 @@ button { color: inherit; }
   .reasoning-grid { grid-template-columns: 1fr; }
   .travel-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .booking-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .completion-fields { grid-template-columns: 1fr; }
   .travel-handoff-packet dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .travel-bundle-summary div { grid-template-columns: 1fr; }
   .travel-result { grid-template-columns: 1fr; }

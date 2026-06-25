@@ -5,7 +5,7 @@
     "personal-assistant": {
       "tool_id": "tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36",
       "path": "./executas/personal-assistant-node",
-      "source": "cut"
+      "source": "working"
     }
   }
 }

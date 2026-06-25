@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from approval import ApprovalStore
 from audit import AuditLogger
+from booking_router import router as booking_router
 from policy import PolicyEngine
 from settings import get_settings
 from tools import BrowserTool, FileTool, ShellTool, ShortcutTool
@@ -23,6 +24,7 @@ shortcut_tool = ShortcutTool(settings)
 shell_tool = ShellTool(settings)
 
 app = FastAPI(title="Anna Controlled Computer Agent", version="0.1.0")
+app.include_router(booking_router)
 
 
 class ToolCall(BaseModel):
@@ -97,18 +99,3 @@ async def _execute(tool_id: str, tool_input: dict[str, Any]) -> dict:
     audit.record("tool.succeeded", {"tool_id": tool_id, "result": result})
     return {"status": "succeeded", "result": result}
 
-
-class ConfirmationRequest(BaseModel):
-    confirmationId: str
-
-
-@app.post("/api/booking/confirmation")
-async def get_booking_confirmation(req: ConfirmationRequest) -> dict:
-    records = audit.list(limit=500)
-    for record in records:
-        data = record if isinstance(record, dict) else {}
-        if data.get("wid") == req.confirmationId or \
-           data.get("window_id") == req.confirmationId or \
-           data.get("confirmation_id") == req.confirmationId:
-            return {"status": "found", "data": data}
-    raise HTTPException(status_code=404, detail="Confirmation not found")
