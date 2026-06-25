@@ -1,7 +1,7 @@
 {
   "slug": "personal-assistant-runtime-20260620",
   "name": "Personal Assistant Runtime 20260620",
-  "version": "0.1.18",
+  "version": "0.1.38",
   "executa_type": "tool",
   "description": "Routes multimodal tasks, provides consent-gated weather and health context, and runs user-triggered reinforcement learning memory.",
   "tool_id": "tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36",
@@ -29,9 +29,9 @@
         "supports_protocol": true,
         "binary_urls": {
           "darwin-arm64": {
-            "url": "https://anna.partners/anna-apps/duasgfuygq36136/personal-assistant-mode/0.1.32/executa/tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36-darwin-arm64.tar.gz",
-            "sha256": "dbd649e711cb657916db3be3d388e854758f91ac1e6ce7af1bc243c52284b3b1",
-            "size": 55130,
+            "url": "https://anna.partners/anna-apps/duasgfuygq36136/personal-assistant-mode/0.1.54/executa/tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36-darwin-arm64.tar.gz",
+            "sha256": "9c4cd80605992357820702e27f08e00b496b7c34d2dfeb511989f0e1d6354f8f",
+            "size": 61687,
             "entrypoint": "bin/tool-duasgfuygq36136-personal-assistant-runtime-20260620-zju54b36",
             "format": "tar.gz"
           }
